@@ -12,20 +12,19 @@ import (
 // lines plot
 func LinesPlot() {
 	n := 300
-	x := make([]float64, n)
-	y1 := make([]float64, n)
-	y2 := make([]float64, n)
+	x := plot.Linspace(0.0, 1.0, n)
+	func1 := make([]float64, n)
+	func2 := make([]float64, n)
 	for i := range x {
-		x[i] = float64(i) * (1.0 / float64(n-1))
-		y1[i] = math.Sin(15. * x[i])
-		y2[i] = 0.5 * math.Sin(15.*x[i])
+		func1[i] = math.Sin(15. * x[i])
+		func2[i] = 0.5 * math.Sin(15.*x[i])
 	}
 
 	plt := plot.NewPlot()
 	plt.FigSize(11, 10)
 
-	plt.Plot(x, y1)
-	plt.Plot(x, y2)
+	plt.Plot(x, func1)
+	plt.Plot(x, func2)
 	plt.Title("plot example")
 	plt.XLabel("x_label")
 	plt.YLabel("y_label")

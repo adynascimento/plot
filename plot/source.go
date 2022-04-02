@@ -20,22 +20,27 @@ var colors = []color.Color{
 }
 
 type plotParameters struct {
-	x_dense   *mat.Dense         // used in heatmap and contour
-	y_dense   *mat.Dense         // used in heatmap and contour
-	z_dense   *mat.Dense         // used in heatmap and contour
-	x_values  []float64          // used in scatter
-	y_values  []float64          // used in scatter
-	z_values  []float64          // used in scatter
-	x, y      [][]float64        // used in lines plot
-	gradient  colorgrad.Gradient // colormap
-	n_levels  int                // colormap levels
-	title     string             // title for all
-	xlabel    string             // xlabel for all
-	ylabel    string             // ylabel for all
-	legend    []string           // mainly used in lines plots
-	xwidth    int                // xwidth of the saved figure
-	ywidth    int                // ywidth of the saved figure
-	plot_name string             // flag to call plotter
+	plotData    plotData           // used in lines plot
+	contourData contourData        // used in heatmap and contour
+	scatterData scatterData        // used in scatter
+	gradient    colorgrad.Gradient // colormap
+	n_levels    int                // colormap levels
+	title       string             // title for all plots
+	legend      []string           // mainly used in lines plots
+	axisLabel   axisLabel          // xlabel and ylabel for all plots
+	axisLimit   axisLimit          // x-axis and y-axis limits
+	figSize     figSize            // xwidth and ywidth of the saved figure
+	plotName    string             // flag to call plotter
+}
+
+type plotData struct{ x, y [][]float64 }
+type contourData struct{ x, y, z *mat.Dense }
+type scatterData struct{ x, y, z []float64 }
+type axisLabel struct{ xlabel, ylabel string }
+type figSize struct{ xwidth, ywidth int }
+type axisLimit struct {
+	xmin, xmax, ymin, ymax float64
+	useXLim, useYLim       bool
 }
 
 // struct that defines methods to match the GridXYZ interface defined in gonum plot library
