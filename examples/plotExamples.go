@@ -5,14 +5,12 @@ import (
 	"math/rand"
 	"plot/plot"
 
-	ngo "plot/numeric"
-
 	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/mat"
 )
 
 // lines plot
-func PlotLines() {
+func LinesPlot() {
 	n := 300
 	x := make([]float64, n)
 	y1 := make([]float64, n)
@@ -37,10 +35,10 @@ func PlotLines() {
 }
 
 // heatmap plot
-func PlotHeatMap() {
+func HeatMapPlot() {
 	n := 300
-	x := mat.NewDense(1, n, ngo.Linspace(-3.0, 3.0, n))
-	y := mat.NewDense(1, n, ngo.Linspace(-3.0, 3.0, n))
+	x := mat.NewDense(1, n, plot.Linspace(-3.0, 3.0, n))
+	y := mat.NewDense(1, n, plot.Linspace(-3.0, 3.0, n))
 	Z := mat.NewDense(n, n, nil)
 	for i := 0; i < n; i++ {
 		for j := 0; j < n; j++ {
@@ -49,7 +47,7 @@ func PlotHeatMap() {
 		}
 	}
 
-	plt := plot.NewHeatMap()
+	plt := plot.NewPlot()
 	plt.FigSize(10, 10)
 
 	plt.HeatMap(x, y, Z, 12, colorgrad.Viridis())
@@ -61,10 +59,10 @@ func PlotHeatMap() {
 }
 
 // contour plot
-func PlotContour() {
+func ContourPlot() {
 	n := 300
-	x := mat.NewDense(1, n, ngo.Linspace(-3.0, 3.0, n))
-	y := mat.NewDense(1, n, ngo.Linspace(-3.0, 3.0, n))
+	x := mat.NewDense(1, n, plot.Linspace(-3.0, 3.0, n))
+	y := mat.NewDense(1, n, plot.Linspace(-3.0, 3.0, n))
 	Z := mat.NewDense(n, n, nil)
 	for i := 0; i < n; i++ {
 		for j := 0; j < n; j++ {
@@ -73,7 +71,7 @@ func PlotContour() {
 		}
 	}
 
-	plt := plot.NewContour()
+	plt := plot.NewPlot()
 	plt.FigSize(10, 10)
 
 	plt.Contour(x, y, Z, 12, colorgrad.Viridis())
@@ -85,7 +83,7 @@ func PlotContour() {
 }
 
 // scatter plot
-func PlotScatter() {
+func ScatterPlot() {
 	rnd := rand.New(rand.NewSource(1))
 
 	n := 15
@@ -98,7 +96,7 @@ func PlotScatter() {
 		Z[i] = 30.0 * rnd.Float64()
 	}
 
-	plt := plot.NewScatter()
+	plt := plot.NewPlot()
 	plt.FigSize(10, 8)
 
 	plt.Scatter(x, y, Z, colorgrad.Viridis())

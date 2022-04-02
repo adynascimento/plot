@@ -5,15 +5,15 @@ import "plot/examples"
 func main() {
 
 	// lines plot
-	examples.PlotLines()
+	examples.LinesPlot()
 
 	// heatmap plot
-	examples.PlotHeatMap()
+	examples.HeatMapPlot()
 
 	// contour plot
-	examples.PlotContour()
+	examples.ContourPlot()
 
 	// scatter plot
-	examples.PlotScatter()
+	examples.ScatterPlot()
 
 }
