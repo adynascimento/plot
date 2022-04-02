@@ -1,19 +1,31 @@
 package main
 
-import "plot/examples"
+import (
+	"math"
+	"plot/plot"
+)
 
 func main() {
 
-	// lines plot
-	examples.LinesPlot()
+	n := 300
+	x := plot.Linspace(0.0, 1.0, n)
+	func1 := make([]float64, n)
+	func2 := make([]float64, n)
+	for i := range x {
+		func1[i] = math.Sin(15. * x[i])
+		func2[i] = 0.5 * math.Sin(15.*x[i])
+	}
 
-	// heatmap plot
-	examples.HeatMapPlot()
+	plt := plot.NewPlot()
+	plt.FigSize(11, 10)
 
-	// contour plot
-	examples.ContourPlot()
+	plt.Plot(x, func1)
+	plt.Plot(x, func2)
+	plt.Title("plot example")
+	plt.XLabel("x_label")
+	plt.YLabel("y_label")
+	plt.Legend("line1", "line2")
 
-	// scatter plot
-	examples.ScatterPlot()
+	plt.Save("figures/lines.png")
 
 }
