@@ -1,4 +1,4 @@
-module plot
+module github.com/adyllyson-gomes/plot
 
 go 1.17
 

@@ -2,11 +2,10 @@ package main
 
 import (
 	"math"
-	"plot/plot"
+	"github.com/adyllyson-gomes/plot/plot"
 )
 
 func main() {
-
 	n := 300
 	x := plot.Linspace(0.0, 1.0, n)
 	func1 := make([]float64, n)
@@ -27,5 +26,4 @@ func main() {
 	plt.Legend("line1", "line2")
 
 	plt.Save("figures/lines.png")
-
 }

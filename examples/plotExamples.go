@@ -3,7 +3,7 @@ package examples
 import (
 	"math"
 	"math/rand"
-	"plot/plot"
+	"github.com/adyllyson-gomes/plot/plot"
 
 	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/mat"
