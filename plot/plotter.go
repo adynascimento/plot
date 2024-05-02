@@ -1,6 +1,7 @@
 package plot
 
 import (
+	"image"
 	"log"
 
 	"github.com/mazznoer/colorgrad"
@@ -43,6 +44,12 @@ func (plt *plotParameters) Contour(x, y, z *mat.Dense, n_levels int, gradient co
 	plt.plotName = "contour"
 }
 
+// parameters to image plot
+func (plt *plotParameters) ImShow(image image.Image) {
+	plt.imageData = image
+	plt.plotName = "image"
+}
+
 // parameters to scatter plot
 func (plt *plotParameters) Scatter(x, y, z []float64, gradient colorgrad.Gradient) {
 	plt.scatterData.x = x
@@ -77,13 +84,15 @@ func (plt *plotParameters) Save(name string) {
 		plt.heatMapPlot(p) // make a heatmap plotter
 	case "contour":
 		plt.contourPlot(p) // make a contour plotter
+	case "image":
+		plt.imagePlot(p) // make a image plotter
 	case "scatter":
 		plt.scatterPlot(p) // make a scatter plotter
 	}
 
 	// save the plot to a PNG file.
-	xwdith := font.Length(plt.figSize.xwidth)*vg.Centimeter
-	ywdith := font.Length(plt.figSize.ywidth)*vg.Centimeter
+	xwdith := font.Length(plt.figSize.xwidth) * vg.Centimeter
+	ywdith := font.Length(plt.figSize.ywidth) * vg.Centimeter
 	err := p.Save(xwdith, ywdith, name)
 	if err != nil {
 		log.Panic(err)
@@ -141,6 +150,19 @@ func (plt *plotParameters) contourPlot(p *plot.Plot) {
 	levels := Linspace(mat.Min(plt.contourData.z), mat.Max(plt.contourData.z), plt.n_levels)
 	c := plotter.NewContour(m, levels, pal)
 	p.Add(c)
+}
+
+func (plt *plotParameters) imagePlot(p *plot.Plot) {
+	// prepare data to plot
+	b := plt.imageData.Bounds()
+	xmin := float64(b.Min.X)
+	ymin := float64(b.Min.Y)
+	xmax := float64(b.Max.X)
+	ymax := float64(b.Max.Y)
+
+	// add and make a image plotter
+	img := plotter.NewImage(plt.imageData, xmin, ymin, xmax, ymax)
+	p.Add(img)
 }
 
 func (plt *plotParameters) scatterPlot(p *plot.Plot) {

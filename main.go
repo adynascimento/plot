@@ -2,7 +2,7 @@ package main
 
 import (
 	"math"
-	"github.com/adyllyson-gomes/plot/plot"
+	"github.com/adynascimento/plot/plot"
 )
 
 func main() {
