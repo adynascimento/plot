@@ -1,6 +1,7 @@
 package plot
 
 import (
+	"image"
 	"image/color"
 
 	"github.com/mazznoer/colorgrad"
@@ -22,6 +23,7 @@ var colors = []color.Color{
 type plotParameters struct {
 	plotData    plotData           // used in lines plot
 	contourData contourData        // used in heatmap and contour
+	imageData   image.Image        // used in imshow
 	scatterData scatterData        // used in scatter
 	gradient    colorgrad.Gradient // colormap
 	n_levels    int                // colormap levels

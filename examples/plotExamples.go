@@ -1,12 +1,18 @@
 package examples
 
 import (
+	"image"
+	"log"
 	"math"
 	"math/rand"
+	"os"
+
 	"github.com/adyllyson-gomes/plot/plot"
 
 	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/mat"
+
+	_ "image/png"
 )
 
 // lines plot
@@ -104,4 +110,25 @@ func ScatterPlot() {
 	plt.YLabel("y_label")
 
 	plt.Save("figures/scatter.png")
+}
+
+func ImagePlot() {
+	file, err := os.Open("image.png")
+	if err != nil {
+		log.Println("error openning image:", err.Error())
+	}
+	defer file.Close()
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		log.Println("error decodinng image:", err.Error())
+	}
+
+	plt := plot.NewPlot()
+	plt.FigSize(18, 10)
+
+	plt.ImShow(img)
+	plt.Title("image plot example")
+	
+	plt.Save("figures/image.png")
 }
