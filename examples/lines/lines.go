@@ -2,10 +2,12 @@ package main
 
 import (
 	"math"
+
 	"github.com/adynascimento/plot/plot"
 )
 
 func main() {
+	// lines plot
 	n := 300
 	x := plot.Linspace(0.0, 1.0, n)
 	func1 := make([]float64, n)
@@ -25,5 +27,5 @@ func main() {
 	plt.YLabel("y_label")
 	plt.Legend("line1", "line2")
 
-	plt.Save("figures/lines.png")
+	plt.Save("lines.png")
 }
