@@ -13,8 +13,24 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 )
 
-func NewPlot() plotParameters {
-	return plotParameters{}
+type Plot interface {
+	Plot(x []float64, y []float64)
+	HeatMap(x, y, z *mat.Dense, n_levels int, gradient colorgrad.Gradient)
+	Contour(x, y, z *mat.Dense, n_levels int, gradient colorgrad.Gradient)
+	ImShow(image image.Image)
+	Scatter(x, y, z []float64, gradient colorgrad.Gradient)
+	Save(name string)
+	FigSize(xwidth, ywidth int)
+	Title(str string)
+	XLabel(xlabel string)
+	YLabel(ylabel string)
+	Legend(str ...string)
+	XLim(xmin, xmax float64)
+	YLim(ymin, ymax float64)
+}
+
+func NewPlot() Plot {
+	return &plotParameters{}
 }
 
 // parameters to lines plots
