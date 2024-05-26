@@ -13,14 +13,12 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 )
 
-type Plot interface {
+type PlotterInterface interface {
 	Plot(x []float64, y []float64)
 	HeatMap(x, y, z *mat.Dense, n_levels int, gradient colorgrad.Gradient)
 	Contour(x, y, z *mat.Dense, n_levels int, gradient colorgrad.Gradient)
 	ImShow(image image.Image)
 	Scatter(x, y, z []float64, gradient colorgrad.Gradient)
-	Save(name string)
-	FigSize(xwidth, ywidth int)
 	Title(str string)
 	XLabel(xlabel string)
 	YLabel(ylabel string)
@@ -29,167 +27,90 @@ type Plot interface {
 	YLim(ymin, ymax float64)
 }
 
+type Plot interface {
+	PlotterInterface
+	Save(name string)
+	FigSize(xwidth, ywidth int)
+}
+
 func NewPlot() Plot {
-	return &plotParameters{}
+	return &plotParameters{
+		plot: plot.New(),
+	}
 }
 
 // parameters to lines plots
 func (plt *plotParameters) Plot(x []float64, y []float64) {
-	plt.plotData.x = append(plt.plotData.x, x)
-	plt.plotData.y = append(plt.plotData.y, y)
-	plt.plotName = "lineplot"
+	// draw a grid behind the data
+	plt.plot.Add(plotter.NewGrid())
+
+	// various plots to the figure
+	pts := make(plotter.XYs, len(x))
+	for j := range pts {
+		pts[j].X = x[j]
+		pts[j].Y = y[j]
+	}
+
+	// make a line plotter with points and set its style.
+	line, _, _ := plotter.NewLinePoints(pts)
+	line.LineStyle.Width = vg.Points(1.5)
+	line.Color = colors[plt.nplot]
+
+	plt.lines = append(plt.lines, line)
+	plt.nplot++
+
+	// add the plotters to the plot, with a legend
+	plt.plot.Add(line)
 }
 
 // parameters to heatmap plot
-func (plt *plotParameters) HeatMap(x, y, z *mat.Dense, n_levels int, gradient colorgrad.Gradient) {
-	plt.contourData.x = x
-	plt.contourData.y = y
-	plt.contourData.z = z
-	plt.n_levels = n_levels
-	plt.gradient = gradient
-	plt.plotName = "heatmap"
+func (plt *plotParameters) HeatMap(x, y, z *mat.Dense, nLevels int, gradient colorgrad.Gradient) {
+	// prepare data to plot
+	m := unitGrid{x: x, y: y, Data: z}
+
+	// add colormap and make a heatmap plotter
+	pal := colorsGradient{ColorList: gradient.Colors(uint(nLevels))}
+	raster := plotter.NewHeatMap(m, pal)
+	raster.Rasterized = true
+	plt.plot.Add(raster)
 }
 
 // parameters to contour plot
-func (plt *plotParameters) Contour(x, y, z *mat.Dense, n_levels int, gradient colorgrad.Gradient) {
-	plt.contourData.x = x
-	plt.contourData.y = y
-	plt.contourData.z = z
-	plt.n_levels = n_levels
-	plt.gradient = gradient
-	plt.plotName = "contour"
+func (plt *plotParameters) Contour(x, y, z *mat.Dense, nLevels int, gradient colorgrad.Gradient) {
+	// prepare data to plot
+	m := unitGrid{x: x, y: y, Data: z}
+
+	// add colormap and make a contour plotter
+	pal := colorsGradient{ColorList: gradient.Colors(uint(nLevels))}
+	levels := Linspace(mat.Min(z), mat.Max(z), nLevels)
+	c := plotter.NewContour(m, levels, pal)
+	plt.plot.Add(c)
 }
 
 // parameters to image plot
 func (plt *plotParameters) ImShow(image image.Image) {
-	plt.imageData = image
-	plt.plotName = "image"
-}
-
-// parameters to scatter plot
-func (plt *plotParameters) Scatter(x, y, z []float64, gradient colorgrad.Gradient) {
-	plt.scatterData.x = x
-	plt.scatterData.y = y
-	plt.scatterData.z = z
-	plt.gradient = gradient
-	plt.plotName = "scatter"
-}
-
-// generate plot and save it to file
-func (plt *plotParameters) Save(name string) {
-	// create a new plot, set its title and axis labels
-	p := plot.New()
-	p.Title.Text = plt.title
-	p.X.Label.Text = plt.axisLabel.xlabel
-	p.Y.Label.Text = plt.axisLabel.ylabel
-
-	// set the axis limits
-	if plt.axisLimit.useXLim {
-		p.X.Min = plt.axisLimit.xmin
-		p.X.Max = plt.axisLimit.xmax
-	}
-	if plt.axisLimit.useYLim {
-		p.Y.Min = plt.axisLimit.ymin
-		p.Y.Max = plt.axisLimit.ymax
-	}
-
-	switch plt.plotName {
-	case "lineplot":
-		plt.linePlot(p) // make a line plotter
-	case "heatmap":
-		plt.heatMapPlot(p) // make a heatmap plotter
-	case "contour":
-		plt.contourPlot(p) // make a contour plotter
-	case "image":
-		plt.imagePlot(p) // make a image plotter
-	case "scatter":
-		plt.scatterPlot(p) // make a scatter plotter
-	}
-
-	// save the plot to a PNG file.
-	xwdith := font.Length(plt.figSize.xwidth) * vg.Centimeter
-	ywdith := font.Length(plt.figSize.ywidth) * vg.Centimeter
-	err := p.Save(xwdith, ywdith, name)
-	if err != nil {
-		log.Panic(err)
-	}
-}
-
-func (plt *plotParameters) linePlot(p *plot.Plot) {
-	// draw a grid behind the data
-	p.Add(plotter.NewGrid())
-
-	// various plots to the figure
-	lines := []*plotter.Line{}
-	for nplot := 0; nplot < len(plt.plotData.x); nplot++ {
-		pts := make(plotter.XYs, len(plt.plotData.x[nplot]))
-		for j := range pts {
-			pts[j].X = plt.plotData.x[nplot][j]
-			pts[j].Y = plt.plotData.y[nplot][j]
-		}
-
-		// make a line plotter with points and set its style.
-		line, _, _ := plotter.NewLinePoints(pts)
-		line.Color = colors[nplot]
-		line.LineStyle.Width = vg.Points(1.5)
-		lines = append(lines, line)
-
-		// add the plotters to the plot, with a legend
-		p.Add(line)
-	}
-
-	// legend style
-	for i, legend := range plt.legend {
-		p.Legend.Add(legend, lines[i])
-		p.Legend.XOffs = -5. * vg.Millimeter
-		p.Legend.Padding = vg.Millimeter
-	}
-}
-
-func (plt *plotParameters) heatMapPlot(p *plot.Plot) {
 	// prepare data to plot
-	m := unitGrid{x: plt.contourData.x, y: plt.contourData.y, Data: plt.contourData.z}
-
-	// add colormap and make a heatmap plotter
-	pal := colorsGradient{ColorList: plt.gradient.Colors(uint(plt.n_levels))}
-	raster := plotter.NewHeatMap(m, pal)
-	raster.Rasterized = true
-	p.Add(raster)
-}
-
-func (plt *plotParameters) contourPlot(p *plot.Plot) {
-	// prepare data to plot
-	m := unitGrid{x: plt.contourData.x, y: plt.contourData.y, Data: plt.contourData.z}
-
-	// add colormap and make a contour plotter
-	pal := colorsGradient{ColorList: plt.gradient.Colors(uint(plt.n_levels))}
-	levels := Linspace(mat.Min(plt.contourData.z), mat.Max(plt.contourData.z), plt.n_levels)
-	c := plotter.NewContour(m, levels, pal)
-	p.Add(c)
-}
-
-func (plt *plotParameters) imagePlot(p *plot.Plot) {
-	// prepare data to plot
-	b := plt.imageData.Bounds()
+	b := image.Bounds()
 	xmin := float64(b.Min.X)
 	ymin := float64(b.Min.Y)
 	xmax := float64(b.Max.X)
 	ymax := float64(b.Max.Y)
 
 	// add and make a image plotter
-	img := plotter.NewImage(plt.imageData, xmin, ymin, xmax, ymax)
-	p.Add(img)
+	img := plotter.NewImage(image, xmin, ymin, xmax, ymax)
+	plt.plot.Add(img)
 }
 
-func (plt *plotParameters) scatterPlot(p *plot.Plot) {
-	p.Add(plotter.NewGrid())
+// parameters to scatter plot
+func (plt *plotParameters) Scatter(x, y, z []float64, gradient colorgrad.Gradient) {
+	plt.plot.Add(plotter.NewGrid())
 
 	// prepare data to plot
-	pts := make(plotter.XYZs, len(plt.scatterData.x))
+	pts := make(plotter.XYZs, len(x))
 	for i := range pts {
-		pts[i].X = plt.scatterData.x[i]
-		pts[i].Y = plt.scatterData.y[i]
-		pts[i].Z = plt.scatterData.z[i]
+		pts[i].X = x[i]
+		pts[i].Y = y[i]
+		pts[i].Z = z[i]
 	}
 
 	// add colormap and make a scatter plotter
@@ -200,10 +121,21 @@ func (plt *plotParameters) scatterPlot(p *plot.Plot) {
 
 	// specify style and color for individual points.
 	sc.GlyphStyleFunc = func(i int) draw.GlyphStyle {
-		colors := plt.gradient.Colors(uint(len(plt.scatterData.z)))
+		colors := gradient.Colors(uint(len(z)))
 		return draw.GlyphStyle{Color: colors[i], Radius: vg.Points(3), Shape: draw.CircleGlyph{}}
 	}
-	p.Add(sc)
+	plt.plot.Add(sc)
+}
+
+// save the plot to an image file
+func (plt *plotParameters) Save(name string) {
+	// save the plot to a PNG file.
+	xwdith := font.Length(plt.figSize.xwidth) * vg.Centimeter
+	ywdith := font.Length(plt.figSize.ywidth) * vg.Centimeter
+	err := plt.plot.Save(xwdith, ywdith, name)
+	if err != nil {
+		log.Panic(err)
+	}
 }
 
 // size of the saved figure
@@ -213,39 +145,42 @@ func (plt *plotParameters) FigSize(xwidth, ywidth int) {
 }
 
 // title for all plots
-func (plt *plotParameters) Title(str string) {
-	plt.title = str
+func (plt *plotParameters) Title(title string) {
+	plt.plot.Title.Text = title
 }
 
 // xlabel for all plots
 func (plt *plotParameters) XLabel(xlabel string) {
-	plt.axisLabel.xlabel = xlabel
+	plt.plot.X.Label.Text = xlabel
 }
 
 // ylabel for all plots
 func (plt *plotParameters) YLabel(ylabel string) {
-	plt.axisLabel.ylabel = ylabel
+	plt.plot.Y.Label.Text = ylabel
 }
 
 // legend mainly used in lines plots
 func (plt *plotParameters) Legend(str ...string) {
-	plt.legend = append(plt.legend, str...)
+	// legend style
+	for i, legend := range str {
+		plt.plot.Legend.Add(legend, plt.lines[i])
+		plt.plot.Legend.XOffs = -5. * vg.Millimeter
+		plt.plot.Legend.Padding = vg.Millimeter
+	}
 }
 
 // set the x-axis vies limits
 func (plt *plotParameters) XLim(xmin, xmax float64) {
 	if xmin < xmax {
-		plt.axisLimit.xmin = xmin
-		plt.axisLimit.xmax = xmax
-		plt.axisLimit.useXLim = true
+		plt.plot.X.Min = xmin
+		plt.plot.X.Max = xmax
 	}
 }
 
 // set the x-axis vies limits
 func (plt *plotParameters) YLim(ymin, ymax float64) {
 	if ymin < ymax {
-		plt.axisLimit.ymin = ymin
-		plt.axisLimit.ymax = ymax
-		plt.axisLimit.useYLim = true
+		plt.plot.Y.Min = ymin
+		plt.plot.Y.Max = ymax
 	}
 }

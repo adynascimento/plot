@@ -1,11 +1,11 @@
 package plot
 
 import (
-	"image"
 	"image/color"
 
-	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/mat"
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotter"
 )
 
 // default colors to lines plot
@@ -21,29 +21,20 @@ var colors = []color.Color{
 }
 
 type plotParameters struct {
-	plotData    plotData           // used in lines plot
-	contourData contourData        // used in heatmap and contour
-	imageData   image.Image        // used in imshow
-	scatterData scatterData        // used in scatter
-	gradient    colorgrad.Gradient // colormap
-	n_levels    int                // colormap levels
-	title       string             // title for all plots
-	legend      []string           // mainly used in lines plots
-	axisLabel   axisLabel          // xlabel and ylabel for all plots
-	axisLimit   axisLimit          // x-axis and y-axis limits
-	figSize     figSize            // xwidth and ywidth of the saved figure
-	plotName    string             // flag to call plotter
+	plot    *plot.Plot      // initialize new plot
+	nplot   int             // line plotter number
+	lines   []*plotter.Line // line plotter config
+	figSize figSize         // xwidth and ywidth of the saved figure
 }
 
-type plotData struct{ x, y [][]float64 }
-type contourData struct{ x, y, z *mat.Dense }
-type scatterData struct{ x, y, z []float64 }
-type axisLabel struct{ xlabel, ylabel string }
-type figSize struct{ xwidth, ywidth int }
-type axisLimit struct {
-	xmin, xmax, ymin, ymax float64
-	useXLim, useYLim       bool
+type subplotParameters struct {
+	rows     int
+	cols     int
+	subplots [][]*plot.Plot // plots for subplot
+	figSize  figSize        // xwidth and ywidth of the saved figure
 }
+
+type figSize struct{ xwidth, ywidth int }
 
 // struct that defines methods to match the GridXYZ interface defined in gonum plot library
 // used in heatmap and contour plots

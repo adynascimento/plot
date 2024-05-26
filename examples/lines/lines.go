@@ -14,7 +14,7 @@ func main() {
 	func2 := make([]float64, n)
 	for i := range x {
 		func1[i] = math.Sin(15. * x[i])
-		func2[i] = 0.5 * math.Sin(15.*x[i])
+		func2[i] = 0.75 * math.Sin(15.*x[i])
 	}
 
 	plt := plot.NewPlot()
