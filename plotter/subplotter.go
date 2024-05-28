@@ -1,6 +1,7 @@
-package plot
+package plotter
 
 import (
+	"image/color"
 	"log"
 	"os"
 	"path/filepath"
@@ -24,7 +25,7 @@ func NewSubplot(rows, cols int) Subplot {
 		subplots[j] = make([]*plot.Plot, cols)
 	}
 
-	return &subplotParameters{
+	return &SubplotParameters{
 		rows:     rows,
 		cols:     cols,
 		subplots: subplots,
@@ -32,16 +33,19 @@ func NewSubplot(rows, cols int) Subplot {
 }
 
 // initialize each subplot individually
-func (plt *subplotParameters) Subplot(row, col int) PlotterInterface {
+func (plt *SubplotParameters) Subplot(row, col int) PlotterInterface {
 	p := plot.New()
 	plt.subplots[row][col] = p
-	return &plotParameters{
+	return &PlotParameters{
 		plot: p,
+		lineOptions: lineOptions{
+			usedColors: make(map[color.Color]bool),
+		},
 	}
 }
 
 // save the plot to an image file
-func (plt *subplotParameters) Save(name string) {
+func (plt *SubplotParameters) Save(name string) {
 	// save the plot to a PNG file.
 	xwdith := font.Length(plt.figSize.xwidth) * vg.Centimeter
 	ywdith := font.Length(plt.figSize.ywidth) * vg.Centimeter
@@ -78,7 +82,7 @@ func (plt *subplotParameters) Save(name string) {
 }
 
 // size of the saved figure
-func (plt *subplotParameters) FigSize(xwidth, ywidth int) {
+func (plt *SubplotParameters) FigSize(xwidth, ywidth int) {
 	plt.figSize.xwidth = xwidth
 	plt.figSize.ywidth = ywidth
 }

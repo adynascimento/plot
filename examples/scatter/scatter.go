@@ -3,7 +3,7 @@ package main
 import (
 	"math/rand"
 
-	"github.com/adynascimento/plot/plot"
+	"github.com/adynascimento/plot/plotter"
 	"github.com/mazznoer/colorgrad"
 )
 
@@ -21,13 +21,14 @@ func main() {
 		Z[i] = 30.0 * rnd.Float64()
 	}
 
-	plt := plot.NewPlot()
+	plt := plotter.NewPlot()
 	plt.FigSize(10, 8)
 
 	plt.Scatter(x, y, Z, colorgrad.Viridis())
 	plt.Title("scatter plot example")
-	plt.XLabel("x_label")
-	plt.YLabel("y_label")
+	plt.XLabel("xLabel")
+	plt.YLabel("yLabel")
+	plt.Grid()
 
 	plt.Save("scatter.png")
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	// contour plot
+	// contourf plot
 	n := 300
 	x := mat.NewDense(1, n, plotter.Linspace(-3.0, 3.0, n))
 	y := mat.NewDense(1, n, plotter.Linspace(-3.0, 3.0, n))
@@ -24,14 +24,15 @@ func main() {
 	plt := plotter.NewPlot()
 	plt.FigSize(10, 10)
 
-	plt.Contour(x, y, Z,
+	plt.ContourF(x, y, Z,
 		plotter.WithLevels(12),
-		plotter.WithGradient(colorgrad.Turbo()),
+		plotter.WithGradient(colorgrad.Viridis()),
+		plotter.WithContourLines(),
 		plotter.WithContourLineStyle("--"),
 	)
-	plt.Title("contour plot example")
+	plt.Title("contourf plot example")
 	plt.XLabel("xLabel")
 	plt.YLabel("yLabel")
 
-	plt.Save("contour.png")
+	plt.Save("contourf.png")
 }

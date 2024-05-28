@@ -1,33 +1,21 @@
-package plot
+package plotter
 
 import (
 	"image/color"
 
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/plot"
-	"gonum.org/v1/plot/plotter"
 )
 
-// default colors to lines plot
-var colors = []color.Color{
-	color.RGBA{000, 000, 000, 255},
-	color.RGBA{255, 000, 000, 255},
-	color.RGBA{90, 155, 212, 255},
-	color.RGBA{122, 195, 106, 255},
-	color.RGBA{250, 167, 91, 255},
-	color.RGBA{158, 103, 171, 255},
-	color.RGBA{206, 112, 88, 255},
-	color.RGBA{215, 127, 180, 255},
+type PlotParameters struct {
+	plot           *plot.Plot           // initialize new plot
+	lineOptions    lineOptions          // line plotter options
+	contourOptions contourOptions       // contour plotter options
+	legends        [][]plot.Thumbnailer // legend plotter config
+	figSize        figSize              // xwidth and ywidth of the saved figure
 }
 
-type plotParameters struct {
-	plot    *plot.Plot      // initialize new plot
-	nplot   int             // line plotter number
-	lines   []*plotter.Line // line plotter config
-	figSize figSize         // xwidth and ywidth of the saved figure
-}
-
-type subplotParameters struct {
+type SubplotParameters struct {
 	rows     int
 	cols     int
 	subplots [][]*plot.Plot // plots for subplot
@@ -70,4 +58,13 @@ func Linspace(start, stop float64, num int) []float64 {
 		r[i] = start + float64(i)*step
 	}
 	return r
+}
+
+// applies the function fn to each of the elements of a. The function fn takes a row/column
+// index and element value and returns some function of that tuple
+func Apply(fn func(i, j int, v float64) float64, a mat.Matrix) *mat.Dense {
+	m := new(mat.Dense)
+	m.Apply(fn, a)
+
+	return m
 }
