@@ -1,25 +1,28 @@
 package plotter
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"log"
+	"os"
 
 	"github.com/mazznoer/colorgrad"
+	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/font"
+	"gonum.org/v1/plot/palette"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
+	"gonum.org/v1/plot/vg/vgimg"
 )
 
 type PlotterInterface interface {
 	Plot(x, y []float64, options ...func(*lineOptions))
 	Contour(x, y, z *mat.Dense, options ...func(*contourOptions))
 	ContourF(x, y, z *mat.Dense, options ...func(*contourOptions))
-	Scatter(x, y, z []float64, params ...interface{})
+	Scatter(x, y, z []float64, options ...func(*scatterOptions))
 	ImShow(image image.Image)
 	Title(str string)
 	XLabel(xlabel string)
@@ -37,7 +40,7 @@ type Plot interface {
 }
 
 func NewPlot() Plot {
-	return &PlotParameters{
+	return &plotParameters{
 		plot: plot.New(),
 		lineOptions: lineOptions{
 			usedColors: make(map[color.Color]bool),
@@ -46,14 +49,14 @@ func NewPlot() Plot {
 }
 
 // parameters to lines plots
-func (plt *PlotParameters) Plot(x, y []float64, options ...func(*lineOptions)) {
+func (plt *plotParameters) Plot(x, y []float64, options ...func(*lineOptions)) {
 	var thumbs []plot.Thumbnailer
 	var plotters []plot.Plotter
 
 	// default options
 	plt.lineOptions.params = params{
+		lineStyle:     Solid,
 		lineWidth:     vg.Points(1.5),
-		lineStyle:     []vg.Length{},
 		markerSize:    vg.Points(3),
 		markerSpacing: 1,
 	}
@@ -100,110 +103,168 @@ func (plt *PlotParameters) Plot(x, y []float64, options ...func(*lineOptions)) {
 }
 
 // parameters to contour plot
-func (plt *PlotParameters) Contour(x, y, z *mat.Dense, options ...func(*contourOptions)) {
+func (plt *plotParameters) Contour(x, y, z *mat.Dense, options ...func(*contourOptions)) {
 	// default options
 	plt.contourOptions = contourOptions{
-		nLevels:   10,
-		gradient:  colorgrad.Viridis(),
-		lineWidth: vg.Points(1),
-		lineStyle: []vg.Length{},
+		nLevels: 10,
+		lineSettings: lineSettings{
+			style: Solid,
+			width: vg.Points(1),
+		},
 	}
 
 	// apply additional options
 	for _, option := range options {
 		option(&plt.contourOptions)
 	}
+	plt.colorBar = plt.contourOptions.colorBar
 
 	// prepare data to plot
 	m := unitGrid{x: x, y: y, Data: z}
 
-	// add colormap and make a contour plotter
-	pal := colorsGradient{
-		ColorList: plt.contourOptions.gradient.Colors(uint(plt.contourOptions.nLevels)),
+	var p palette.Palette
+	if plt.contourOptions.gradient != (colorgrad.Gradient{}) {
+		// add colormap and make a contour plotter
+		p = &colorsGradient{colorList: plt.contourOptions.gradient.Colors(uint(plt.contourOptions.nLevels))}
 	}
+
 	levels := Linspace(mat.Min(z), mat.Max(z), plt.contourOptions.nLevels)
-	c := plotter.NewContour(m, levels, pal)
+	c := plotter.NewContour(m, levels, p)
 	c.LineStyles = []draw.LineStyle{{
 		Color:  color.Black,
-		Width:  plt.contourOptions.lineWidth,
-		Dashes: plt.contourOptions.lineStyle,
+		Width:  plt.contourOptions.lineSettings.width,
+		Dashes: plt.contourOptions.lineSettings.style,
 	}}
 
 	// add the plotters to the plot
 	plt.plot.Add(c)
+
+	if plt.colorBar.show {
+		// get min and max values
+		plt.colorBar.min = c.Min
+		plt.colorBar.max = c.Max
+	}
 }
 
 // parameters to contourf plot
-func (plt *PlotParameters) ContourF(x, y, z *mat.Dense, options ...func(*contourOptions)) {
+func (plt *plotParameters) ContourF(x, y, z *mat.Dense, options ...func(*contourOptions)) {
 	// default options
 	plt.contourOptions = contourOptions{
 		nLevels:  10,
 		gradient: colorgrad.Viridis(),
+		lineSettings: lineSettings{
+			style: Solid,
+			width: vg.Points(1),
+		},
+		colorBar: colorBar{
+			gradient: colorgrad.Viridis(),
+		},
 	}
 
 	// apply additional options
 	for _, option := range options {
 		option(&plt.contourOptions)
 	}
+	plt.colorBar = plt.contourOptions.colorBar
 
 	// prepare data to plot
 	m := unitGrid{x: x, y: y, Data: z}
 
 	// add colormap and make a heatmap plotter
-	pal := colorsGradient{
-		ColorList: plt.contourOptions.gradient.Colors(uint(plt.contourOptions.nLevels)),
-	}
-	raster := plotter.NewHeatMap(m, pal)
+	p := colorsGradient{colorList: plt.contourOptions.gradient.Colors(uint(plt.contourOptions.nLevels))}
+	raster := plotter.NewHeatMap(m, &p)
 	raster.Rasterized = true
 
 	// add the plotters to the plot
 	plt.plot.Add(raster)
 
-	if plt.contourOptions.addLines {
+	if plt.colorBar.show {
+		// get min and max values
+		plt.colorBar.min = raster.Min
+		plt.colorBar.max = raster.Max
+	}
+
+	if plt.contourOptions.lineSettings.show {
 		// add contour lines to contourf
-		black, _ := colorgrad.NewGradient().Colors(color.Black).Build()
-		options = append(options, WithGradient(black))
-		plt.Contour(x, y, z, options...)
+		levels := Linspace(mat.Min(z), mat.Max(z), plt.contourOptions.nLevels)
+		c := plotter.NewContour(m, levels, nil)
+		c.LineStyles = []draw.LineStyle{{
+			Color:  Black,
+			Width:  plt.contourOptions.lineSettings.width,
+			Dashes: plt.contourOptions.lineSettings.style,
+		}}
+
+		// add the plotters to the plot
+		plt.plot.Add(c)
 	}
 }
 
 // parameters to scatter plot
-func (plt *PlotParameters) Scatter(x, y, z []float64, params ...interface{}) {
-	// default values
-	gradient := colorgrad.Viridis()
-	for _, param := range params {
-		switch v := param.(type) {
-		case colorgrad.Gradient:
-			gradient = v
-		default:
-			fmt.Printf("unknown options for scatter plot, type: %T\n", v)
-		}
+func (plt *plotParameters) Scatter(x, y, z []float64, options ...func(*scatterOptions)) {
+	// default options
+	plt.scatterOptions = scatterOptions{
+		color:      Blue,
+		marker:     Circle,
+		markerSize: vg.Points(3),
 	}
 
+	// apply additional options
+	for _, option := range options {
+		option(&plt.scatterOptions)
+	}
+	plt.colorBar = plt.scatterOptions.colorBar
+
 	// prepare data to plot
-	pts := make(plotter.XYZs, len(x))
-	for i := range pts {
-		pts[i].X = x[i]
-		pts[i].Y = y[i]
-		pts[i].Z = z[i]
+	var xys plotter.XYer
+	if len(z) == 0 {
+		pts := make(plotter.XYs, len(x))
+		for i := range pts {
+			pts[i].X = x[i]
+			pts[i].Y = y[i]
+		}
+		xys = pts
+	} else {
+		pts := make(plotter.XYZs, len(x))
+		for i := range pts {
+			pts[i].X = x[i]
+			pts[i].Y = y[i]
+			pts[i].Z = z[i]
+		}
+		xys = pts
 	}
 
 	// add colormap and make a scatter plotter
-	sc, err := plotter.NewScatter(pts)
+	sc, err := plotter.NewScatter(xys)
 	if err != nil {
 		log.Panic(err)
 	}
-
-	// specify style and color for individual points.
-	sc.GlyphStyleFunc = func(i int) draw.GlyphStyle {
-		colors := gradient.Colors(uint(len(z)))
-		return draw.GlyphStyle{Color: colors[i], Radius: vg.Points(3), Shape: draw.CircleGlyph{}}
+	sc.GlyphStyle = draw.GlyphStyle{
+		Color:  plt.scatterOptions.color,
+		Radius: plt.scatterOptions.markerSize,
+		Shape:  plt.scatterOptions.marker,
 	}
+
+	if plt.scatterOptions.gradient != (colorgrad.Gradient{}) {
+		// specify style and color for individual points.
+		sc.GlyphStyleFunc = func(i int) draw.GlyphStyle {
+			colors := plt.scatterOptions.gradient.Colors(uint(len(z)))
+			return draw.GlyphStyle{Color: colors[i], Radius: plt.scatterOptions.markerSize,
+				Shape: plt.scatterOptions.marker}
+		}
+	}
+
+	// add the plotters to the plot
 	plt.plot.Add(sc)
+
+	if plt.colorBar.show {
+		// get min and max values
+		plt.colorBar.min = floats.Min(z)
+		plt.colorBar.max = floats.Max(z)
+	}
 }
 
 // parameters to image plot
-func (plt *PlotParameters) ImShow(image image.Image) {
+func (plt *plotParameters) ImShow(image image.Image) {
 	// prepare data to plot
 	b := image.Bounds()
 	xmin := float64(b.Min.X)
@@ -217,39 +278,69 @@ func (plt *PlotParameters) ImShow(image image.Image) {
 }
 
 // save the plot to an image file
-func (plt *PlotParameters) Save(name string) {
+func (plt *plotParameters) Save(file string) {
 	// save the plot to a PNG file.
-	xwdith := font.Length(plt.figSize.xwidth) * vg.Centimeter
-	ywdith := font.Length(plt.figSize.ywidth) * vg.Centimeter
-	err := plt.plot.Save(xwdith, ywdith, name)
+	xwidth := font.Length(plt.figSize.xwidth) * vg.Centimeter
+	ywidth := font.Length(plt.figSize.ywidth) * vg.Centimeter
+
+	// new image canvas
+	img := vgimg.New(xwidth, ywidth)
+
+	// draw the plot
+	plt.plot.Draw(draw.Canvas{
+		Canvas: draw.New(img),
+		Rectangle: vg.Rectangle{
+			Min: vg.Point{X: 0, Y: 0},
+			Max: vg.Point{X: xwidth, Y: ywidth},
+		},
+	})
+
+	// add colorbar to plot
+	if plt.colorBar.show {
+		switch plt.colorBar.position {
+		case Vertical:
+			img = plt.drawVerticalColorBar(xwidth, ywidth)
+		case Horizontal:
+			img = plt.drawHorizontalColorBar(xwidth, ywidth)
+		}
+	}
+
+	// save the image to a file
+	w, err := os.Create(file)
 	if err != nil {
-		log.Panic(err)
+		panic(err)
+	}
+	defer w.Close()
+
+	png := vgimg.PngCanvas{Canvas: img}
+	if _, err := png.WriteTo(w); err != nil {
+		panic(err)
 	}
 }
 
 // size of the saved figure
-func (plt *PlotParameters) FigSize(xwidth, ywidth int) {
+func (plt *plotParameters) FigSize(xwidth, ywidth int) {
 	plt.figSize.xwidth = xwidth
 	plt.figSize.ywidth = ywidth
 }
 
 // title for all plots
-func (plt *PlotParameters) Title(title string) {
+func (plt *plotParameters) Title(title string) {
 	plt.plot.Title.Text = title
 }
 
 // xlabel for all plots
-func (plt *PlotParameters) XLabel(xlabel string) {
+func (plt *plotParameters) XLabel(xlabel string) {
 	plt.plot.X.Label.Text = xlabel
 }
 
 // ylabel for all plots
-func (plt *PlotParameters) YLabel(ylabel string) {
+func (plt *plotParameters) YLabel(ylabel string) {
 	plt.plot.Y.Label.Text = ylabel
 }
 
 // legend mainly used in lines plots
-func (plt *PlotParameters) Legend(str ...string) {
+func (plt *plotParameters) Legend(str ...string) {
 	// legend style
 	for i, legend := range str {
 		plt.plot.Legend.Add(legend, plt.legends[i]...)
@@ -259,7 +350,7 @@ func (plt *PlotParameters) Legend(str ...string) {
 }
 
 // set the x-axis vies limits
-func (plt *PlotParameters) XLim(xmin, xmax float64) {
+func (plt *plotParameters) XLim(xmin, xmax float64) {
 	if xmin < xmax {
 		plt.plot.X.Min = xmin
 		plt.plot.X.Max = xmax
@@ -267,7 +358,7 @@ func (plt *PlotParameters) XLim(xmin, xmax float64) {
 }
 
 // set the x-axis vies limits
-func (plt *PlotParameters) YLim(ymin, ymax float64) {
+func (plt *plotParameters) YLim(ymin, ymax float64) {
 	if ymin < ymax {
 		plt.plot.Y.Min = ymin
 		plt.plot.Y.Max = ymax
@@ -275,6 +366,6 @@ func (plt *PlotParameters) YLim(ymin, ymax float64) {
 }
 
 // draw grid with both vertical and horizontal lines
-func (plt *PlotParameters) Grid() {
+func (plt *plotParameters) Grid() {
 	plt.plot.Add(plotter.NewGrid())
 }

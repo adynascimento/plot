@@ -20,15 +20,15 @@ func main() {
 	plt.FigSize(11, 10)
 
 	plt.Plot(x.RawMatrix().Data, func1.RawMatrix().Data,
-		plotter.WithLineColor("blue"),
-		plotter.WithLineStyle("-."),
-		plotter.WithMarker("o"),
+		plotter.WithLineColor(plotter.Blue),
+		plotter.WithLineStyle(plotter.DashDotted),
+		plotter.WithMarker(plotter.Circle),
 		plotter.WithMarkerSpacing(8),
 	)
 
 	plt.Plot(x.RawMatrix().Data, func2.RawMatrix().Data,
-		plotter.WithLineColor("red"),
-		plotter.WithMarker("s"),
+		plotter.WithLineColor(plotter.Red),
+		plotter.WithMarker(plotter.Square),
 		plotter.WithMarkerSpacing(8),
 	)
 

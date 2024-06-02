@@ -28,7 +28,8 @@ func main() {
 		plotter.WithLevels(12),
 		plotter.WithGradient(colorgrad.Viridis()),
 		plotter.WithContourLines(),
-		plotter.WithContourLineStyle("--"),
+		plotter.WithContourLineStyle(plotter.Dashed),
+		plotter.WithColorbar(plotter.Vertical),
 	)
 	plt.Title("contourf plot example")
 	plt.XLabel("xLabel")

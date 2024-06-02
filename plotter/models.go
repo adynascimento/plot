@@ -3,19 +3,23 @@ package plotter
 import (
 	"image/color"
 
+	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/palette"
 )
 
-type PlotParameters struct {
+type plotParameters struct {
 	plot           *plot.Plot           // initialize new plot
 	lineOptions    lineOptions          // line plotter options
 	contourOptions contourOptions       // contour plotter options
+	scatterOptions scatterOptions       // scatter plotter options
 	legends        [][]plot.Thumbnailer // legend plotter config
 	figSize        figSize              // xwidth and ywidth of the saved figure
+	colorBar       colorBar             // show colorbar with gradient
 }
 
-type SubplotParameters struct {
+type subplotParameters struct {
 	rows     int
 	cols     int
 	subplots [][]*plot.Plot // plots for subplot
@@ -39,11 +43,27 @@ func (g unitGrid) Y(r int) float64    { return g.y.At(0, r) }
 // struct that defines methods to match the Palette interface defined in gonum plot library
 // used in heatmap and contour plots
 type colorsGradient struct {
-	ColorList []color.Color
+	colorList []color.Color
+	gradient  colorgrad.Gradient
+	min, max  float64
 }
 
 // methods to match the Palette interface defined in gonum plot library
-func (g colorsGradient) Colors() []color.Color { return g.ColorList }
+func (g *colorsGradient) Colors() []color.Color { return g.colorList }
+func (g *colorsGradient) Alpha() float64        { return 1.0 }
+func (g *colorsGradient) At(v float64) (color.Color, error) {
+	return g.gradient.At(v), nil
+}
+func (g *colorsGradient) Max() float64 { return g.max }
+func (g *colorsGradient) Min() float64 { return g.min }
+func (g *colorsGradient) Palette(n int) palette.Palette {
+	return &colorsGradient{
+		colorList: g.gradient.Colors(uint(n)),
+	}
+}
+func (g *colorsGradient) SetMax(v float64)   { g.max = v }
+func (g *colorsGradient) SetMin(v float64)   { g.min = v }
+func (g *colorsGradient) SetAlpha(a float64) {}
 
 // generate linearly spaced slice of float64
 func Linspace(start, stop float64, num int) []float64 {

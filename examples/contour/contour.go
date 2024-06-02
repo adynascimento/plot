@@ -27,7 +27,7 @@ func main() {
 	plt.Contour(x, y, Z,
 		plotter.WithLevels(12),
 		plotter.WithGradient(colorgrad.Turbo()),
-		plotter.WithContourLineStyle("--"),
+		plotter.WithContourLineStyle(plotter.Dashed),
 	)
 	plt.Title("contour plot example")
 	plt.XLabel("xLabel")

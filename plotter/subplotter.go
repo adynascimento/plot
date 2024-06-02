@@ -25,7 +25,7 @@ func NewSubplot(rows, cols int) Subplot {
 		subplots[j] = make([]*plot.Plot, cols)
 	}
 
-	return &SubplotParameters{
+	return &subplotParameters{
 		rows:     rows,
 		cols:     cols,
 		subplots: subplots,
@@ -33,10 +33,10 @@ func NewSubplot(rows, cols int) Subplot {
 }
 
 // initialize each subplot individually
-func (plt *SubplotParameters) Subplot(row, col int) PlotterInterface {
+func (plt *subplotParameters) Subplot(row, col int) PlotterInterface {
 	p := plot.New()
 	plt.subplots[row][col] = p
-	return &PlotParameters{
+	return &plotParameters{
 		plot: p,
 		lineOptions: lineOptions{
 			usedColors: make(map[color.Color]bool),
@@ -45,13 +45,13 @@ func (plt *SubplotParameters) Subplot(row, col int) PlotterInterface {
 }
 
 // save the plot to an image file
-func (plt *SubplotParameters) Save(name string) {
+func (plt *subplotParameters) Save(file string) {
 	// save the plot to a PNG file.
-	xwdith := font.Length(plt.figSize.xwidth) * vg.Centimeter
-	ywdith := font.Length(plt.figSize.ywidth) * vg.Centimeter
+	xwidth := font.Length(plt.figSize.xwidth) * vg.Centimeter
+	ywidth := font.Length(plt.figSize.ywidth) * vg.Centimeter
 
-	format := strings.TrimPrefix(strings.ToLower(filepath.Ext(name)), ".")
-	img, err := draw.NewFormattedCanvas(xwdith, ywdith, format)
+	format := strings.TrimPrefix(strings.ToLower(filepath.Ext(file)), ".")
+	img, err := draw.NewFormattedCanvas(xwidth, ywidth, format)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -70,7 +70,7 @@ func (plt *SubplotParameters) Save(name string) {
 		}
 	}
 
-	w, err := os.Create(name)
+	w, err := os.Create(file)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -82,7 +82,7 @@ func (plt *SubplotParameters) Save(name string) {
 }
 
 // size of the saved figure
-func (plt *SubplotParameters) FigSize(xwidth, ywidth int) {
+func (plt *subplotParameters) FigSize(xwidth, ywidth int) {
 	plt.figSize.xwidth = xwidth
 	plt.figSize.ywidth = ywidth
 }
