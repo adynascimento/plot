@@ -1,9 +1,10 @@
 package main
 
 import (
+	"math"
 	"math/rand"
 
-	"github.com/adynascimento/plot/plot"
+	"github.com/adynascimento/plot/plotter"
 	"github.com/mazznoer/colorgrad"
 )
 
@@ -11,23 +12,31 @@ func main() {
 	// scatter plot
 	rnd := rand.New(rand.NewSource(1))
 
-	n := 15
+	n := 500
+	theta := plotter.Linspace(0, 1, n)
 	x := make([]float64, n)
 	y := make([]float64, n)
 	Z := make([]float64, n)
 	for i := range x {
-		x[i] = rnd.Float64()
-		y[i] = rnd.Float64()
-		Z[i] = 30.0 * rnd.Float64()
+		x[i] = math.Exp(theta[i]) * math.Sin(100.*theta[i])
+		y[i] = math.Exp(theta[i]) * math.Cos(100.*theta[i])
+		Z[i] = math.Cos(30. * rnd.Float64())
 	}
 
-	plt := plot.NewPlot()
-	plt.FigSize(10, 8)
+	plt := plotter.NewPlot()
+	plt.FigSize(10, 9)
 
-	plt.Scatter(x, y, Z, colorgrad.Viridis())
+	plt.Scatter(x, y, Z,
+		plotter.WithScatterGradient(colorgrad.Viridis()),
+		plotter.WithScatterMarker(plotter.Circle),
+		plotter.WithScatterColorbar(plotter.Vertical),
+	)
 	plt.Title("scatter plot example")
-	plt.XLabel("x_label")
-	plt.YLabel("y_label")
+	plt.XLabel("xLabel")
+	plt.YLabel("yLabel")
+	plt.XLim(-3, 3)
+	plt.YLim(-3, 3)
+	plt.Grid()
 
 	plt.Save("scatter.png")
 }

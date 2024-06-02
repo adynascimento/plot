@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/adynascimento/plot/plot"
+	"github.com/adynascimento/plot/plotter"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 		log.Println("error decodinng image:", err.Error())
 	}
 
-	plt := plot.NewPlot()
+	plt := plotter.NewPlot()
 	plt.FigSize(18, 10)
 
 	plt.ImShow(img)
