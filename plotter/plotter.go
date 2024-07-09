@@ -23,7 +23,7 @@ type PlotterInterface interface {
 	Contour(x, y, z *mat.Dense, options ...func(*contourOptions))
 	ContourF(x, y, z *mat.Dense, options ...func(*contourOptions))
 	Scatter(x, y, z []float64, options ...func(*scatterOptions))
-	ImShow(image image.Image)
+	ImShow(x []*mat.Dense)
 	Title(str string)
 	XLabel(xlabel string)
 	YLabel(ylabel string)
@@ -264,17 +264,43 @@ func (plt *plotParameters) Scatter(x, y, z []float64, options ...func(*scatterOp
 }
 
 // parameters to image plot
-func (plt *plotParameters) ImShow(image image.Image) {
+func (plt *plotParameters) ImShow(x []*mat.Dense) {
 	// prepare data to plot
-	b := image.Bounds()
-	xmin := float64(b.Min.X)
-	ymin := float64(b.Min.Y)
-	xmax := float64(b.Max.X)
-	ymax := float64(b.Max.Y)
+	var img image.Image
+	rows, cols := x[0].Dims()
+
+	xmin := 0.0
+	ymin := 0.0
+	xmax := float64(cols)
+	ymax := float64(rows)
+
+	if len(x) == 1 {
+		// grayscale image
+		grayImg := image.NewGray(image.Rect(int(xmin), int(ymin), int(xmax), int(ymax)))
+		for i := 0; i < rows; i++ {
+			for j := 0; j < cols; j++ {
+				v := uint8(x[0].At(i, j))
+				grayImg.SetGray(j, i, color.Gray{Y: v})
+			}
+		}
+		img = grayImg
+	} else {
+		// RGB image
+		rgbImg := image.NewRGBA(image.Rect(int(xmin), int(ymin), int(xmax), int(ymax)))
+		for i := 0; i < rows; i++ {
+			for j := 0; j < cols; j++ {
+				r := uint8(x[0].At(i, j))
+				g := uint8(x[1].At(i, j))
+				b := uint8(x[2].At(i, j))
+				rgbImg.SetRGBA(j, i, color.RGBA{R: r, G: g, B: b, A: 255})
+			}
+		}
+		img = rgbImg
+	}
 
 	// add and make a image plotter
-	img := plotter.NewImage(image, xmin, ymin, xmax, ymax)
-	plt.plot.Add(img)
+	plt.plot.Add(plotter.NewImage(img, xmin, ymin, xmax, ymax))
+	plt.plot.X.Max = float64(rows) + 0.02*float64(rows)
 }
 
 // save the plot to an image file
