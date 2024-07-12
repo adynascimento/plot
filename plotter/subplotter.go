@@ -4,19 +4,25 @@ import (
 	"image/color"
 	"log"
 	"os"
-	"path/filepath"
-	"strings"
 
+	"gioui.org/app"
+	"gioui.org/io/system"
+	"gioui.org/layout"
+	"gioui.org/op"
+	"gioui.org/op/paint"
+	"gioui.org/unit"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/font"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
+	"gonum.org/v1/plot/vg/vgimg"
 )
 
 type Subplot interface {
-	Save(name string)
-	FigSize(xwidth, ywidth int)
 	Subplot(row, col int) PlotterInterface
+	FigSize(xwidth, ywidth int)
+	Save(name string)
+	Show()
 }
 
 func NewSubplot(rows, cols int) Subplot {
@@ -33,6 +39,9 @@ func NewSubplot(rows, cols int) Subplot {
 			xwidth: 15,
 			ywidth: 10,
 		},
+		figure: vgimg.PngCanvas{
+			Canvas: &vgimg.Canvas{},
+		},
 	}
 }
 
@@ -48,17 +57,13 @@ func (plt *subplotParameters) Subplot(row, col int) PlotterInterface {
 	}
 }
 
-// save the plot to an image file
-func (plt *subplotParameters) Save(file string) {
-	// save the plot to a PNG file.
+// draw plot to a figure
+func (plt *subplotParameters) DrawPlot() {
 	xwidth := font.Length(plt.figSize.xwidth) * vg.Centimeter
 	ywidth := font.Length(plt.figSize.ywidth) * vg.Centimeter
 
-	format := strings.TrimPrefix(strings.ToLower(filepath.Ext(file)), ".")
-	img, err := draw.NewFormattedCanvas(xwidth, ywidth, format)
-	if err != nil {
-		log.Panic(err)
-	}
+	// new image canvas
+	img := vgimg.New(xwidth, ywidth)
 
 	canvases := plot.Align(plt.subplots, draw.Tiles{
 		Rows: plt.rows,
@@ -74,14 +79,58 @@ func (plt *subplotParameters) Save(file string) {
 		}
 	}
 
+	plt.figure = vgimg.PngCanvas{Canvas: img}
+}
+
+// show plot in graphical window
+func (plt *subplotParameters) Show() {
+	if plt.figure.Image() == nil {
+		plt.DrawPlot()
+	}
+
+	// graphical window creation
+	imgData := plt.figure.Image()
+	window := app.NewWindow(
+		app.Title("Plot Viewer"),
+		app.Size(unit.Dp(float32(imgData.Bounds().Dx())),
+			unit.Dp(float32(imgData.Bounds().Dy()))),
+	)
+
+	var ops op.Ops
+	for e := range window.Events() {
+		switch e := e.(type) {
+		case system.DestroyEvent:
+			return
+		case system.FrameEvent:
+			gtx := layout.NewContext(&ops, e)
+			layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				imgOp := paint.NewImageOp(imgData)
+				imgOp.Add(gtx.Ops)
+				paint.PaintOp{}.Add(gtx.Ops)
+				return layout.Dimensions{Size: gtx.Constraints.Max}
+			})
+			e.Frame(gtx.Ops)
+		}
+	}
+	app.Main()
+}
+
+// save the plot to an image file
+func (plt *subplotParameters) Save(file string) {
+	// save the plot to a PNG file.
+	if plt.figure.Image() == nil {
+		plt.DrawPlot()
+	}
+
+	// save the image to a file
 	w, err := os.Create(file)
 	if err != nil {
 		log.Panic(err)
 	}
 	defer w.Close()
 
-	if _, err := img.WriteTo(w); err != nil {
-		log.Panic(err)
+	if _, err := plt.figure.WriteTo(w); err != nil {
+		panic(err)
 	}
 }
 

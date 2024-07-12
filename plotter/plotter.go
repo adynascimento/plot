@@ -6,6 +6,12 @@ import (
 	"log"
 	"os"
 
+	"gioui.org/app"
+	"gioui.org/io/system"
+	"gioui.org/layout"
+	"gioui.org/op"
+	"gioui.org/op/paint"
+	"gioui.org/unit"
 	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
@@ -35,8 +41,9 @@ type PlotterInterface interface {
 
 type Plot interface {
 	PlotterInterface
-	Save(name string)
 	FigSize(xwidth, ywidth int)
+	Save(name string)
+	Show()
 }
 
 func NewPlot() Plot {
@@ -48,6 +55,9 @@ func NewPlot() Plot {
 		figSize: figSize{
 			xwidth: 10,
 			ywidth: 10,
+		},
+		figure: vgimg.PngCanvas{
+			Canvas: &vgimg.Canvas{},
 		},
 	}
 }
@@ -307,9 +317,8 @@ func (plt *plotParameters) ImShow(x []*mat.Dense) {
 	plt.plot.X.Max = float64(rows) + 0.02*float64(rows)
 }
 
-// save the plot to an image file
-func (plt *plotParameters) Save(file string) {
-	// save the plot to a PNG file.
+// draw plot to a figure
+func (plt *plotParameters) DrawPlot() {
 	xwidth := font.Length(plt.figSize.xwidth) * vg.Centimeter
 	ywidth := font.Length(plt.figSize.ywidth) * vg.Centimeter
 
@@ -335,6 +344,49 @@ func (plt *plotParameters) Save(file string) {
 		}
 	}
 
+	plt.figure = vgimg.PngCanvas{Canvas: img}
+}
+
+// show plot in graphical window
+func (plt *plotParameters) Show() {
+	if plt.figure.Image() == nil {
+		plt.DrawPlot()
+	}
+
+	// graphical window creation
+	imgData := plt.figure.Image()
+	window := app.NewWindow(
+		app.Title("Plot Viewer"),
+		app.Size(unit.Dp(float32(imgData.Bounds().Dx())),
+			unit.Dp(float32(imgData.Bounds().Dy()))),
+	)
+
+	var ops op.Ops
+	for e := range window.Events() {
+		switch e := e.(type) {
+		case system.DestroyEvent:
+			return
+		case system.FrameEvent:
+			gtx := layout.NewContext(&ops, e)
+			layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				imgOp := paint.NewImageOp(imgData)
+				imgOp.Add(gtx.Ops)
+				paint.PaintOp{}.Add(gtx.Ops)
+				return layout.Dimensions{Size: gtx.Constraints.Max}
+			})
+			e.Frame(gtx.Ops)
+		}
+	}
+	app.Main()
+}
+
+// save the plot to an image file
+func (plt *plotParameters) Save(file string) {
+	// save the plot to a PNG file.
+	if plt.figure.Image() == nil {
+		plt.DrawPlot()
+	}
+
 	// save the image to a file
 	w, err := os.Create(file)
 	if err != nil {
@@ -342,8 +394,7 @@ func (plt *plotParameters) Save(file string) {
 	}
 	defer w.Close()
 
-	png := vgimg.PngCanvas{Canvas: img}
-	if _, err := png.WriteTo(w); err != nil {
+	if _, err := plt.figure.WriteTo(w); err != nil {
 		panic(err)
 	}
 }

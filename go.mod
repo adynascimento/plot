@@ -3,6 +3,7 @@ module github.com/adynascimento/plot
 go 1.17
 
 require (
+	gioui.org v0.0.0-20210308172011-57750fc8a0a6
 	github.com/mazznoer/colorgrad v0.8.1
 	gonum.org/v1/gonum v0.11.0
 	gonum.org/v1/plot v0.11.0
@@ -18,6 +19,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mazznoer/csscolorparser v0.1.0 // indirect
 	golang.org/x/exp v0.0.0-20220328175248-053ad81199eb // indirect
-	golang.org/x/image v0.0.0-20220302094943-723b81ca9867 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/image v0.14.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 )

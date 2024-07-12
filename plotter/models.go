@@ -7,6 +7,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/palette"
+	"gonum.org/v1/plot/vg/vgimg"
 )
 
 type plotParameters struct {
@@ -16,14 +17,16 @@ type plotParameters struct {
 	scatterOptions scatterOptions       // scatter plotter options
 	legends        [][]plot.Thumbnailer // legend plotter config
 	figSize        figSize              // xwidth and ywidth of the saved figure
+	figure         vgimg.PngCanvas      // figure to plot and save
 	colorBar       colorBar             // show colorbar with gradient
 }
 
 type subplotParameters struct {
 	rows     int
 	cols     int
-	subplots [][]*plot.Plot // plots for subplot
-	figSize  figSize        // xwidth and ywidth of the saved figure
+	subplots [][]*plot.Plot  // plots for subplot
+	figSize  figSize         // xwidth and ywidth of the saved figure
+	figure   vgimg.PngCanvas // figure to plot and savev
 }
 
 type figSize struct{ xwidth, ywidth int }
