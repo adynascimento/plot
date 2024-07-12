@@ -45,6 +45,10 @@ func NewPlot() Plot {
 		lineOptions: lineOptions{
 			usedColors: make(map[color.Color]bool),
 		},
+		figSize: figSize{
+			xwidth: 10,
+			ywidth: 10,
+		},
 	}
 }
 
