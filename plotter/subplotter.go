@@ -29,6 +29,10 @@ func NewSubplot(rows, cols int) Subplot {
 		rows:     rows,
 		cols:     cols,
 		subplots: subplots,
+		figSize: figSize{
+			xwidth: 15,
+			ywidth: 10,
+		},
 	}
 }
 
