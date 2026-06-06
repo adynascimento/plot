@@ -7,11 +7,11 @@ import (
 	"os"
 
 	"gioui.org/app"
-	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
+	"gioui.org/widget"
 	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
@@ -355,28 +355,36 @@ func (plt *plotParameters) Show() {
 
 	// graphical window creation
 	imgData := plt.figure.Image()
-	window := app.NewWindow(
-		app.Title("Plot Viewer"),
-		app.Size(unit.Dp(float32(imgData.Bounds().Dx())),
-			unit.Dp(float32(imgData.Bounds().Dy()))),
-	)
+	go func() {
+		window := new(app.Window)
+		window.Option(
+			app.Title("Plot Viewer"),
+			app.Size(
+				unit.Dp(float32(imgData.Bounds().Dx())),
+				unit.Dp(float32(imgData.Bounds().Dy())),
+			),
+		)
 
-	var ops op.Ops
-	for e := range window.Events() {
-		switch e := e.(type) {
-		case system.DestroyEvent:
-			return
-		case system.FrameEvent:
-			gtx := layout.NewContext(&ops, e)
-			layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-				imgOp := paint.NewImageOp(imgData)
-				imgOp.Add(gtx.Ops)
-				paint.PaintOp{}.Add(gtx.Ops)
-				return layout.Dimensions{Size: gtx.Constraints.Max}
-			})
-			e.Frame(gtx.Ops)
+		img := widget.Image{
+			Src:      paint.NewImageOp(imgData),
+			Fit:      widget.Contain,
+			Position: layout.Center,
+			Scale:    1,
 		}
-	}
+
+		var ops op.Ops
+		for {
+			switch e := window.Event().(type) {
+			case app.DestroyEvent:
+				os.Exit(0)
+			case app.FrameEvent:
+				gtx := app.NewContext(&ops, e)
+				img.Layout(gtx)
+				e.Frame(gtx.Ops)
+			}
+		}
+	}()
+
 	app.Main()
 }
 
