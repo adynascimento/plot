@@ -25,6 +25,7 @@ var (
 	Orange  colorType = color.RGBA{255, 165, 000, 255}
 	Purple  colorType = color.RGBA{128, 000, 128, 255}
 	Yellow  colorType = color.RGBA{255, 255, 000, 255}
+	Gray    colorType = color.RGBA{128, 128, 128, 255}
 )
 
 // default colors to lines plot

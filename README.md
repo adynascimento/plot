@@ -8,6 +8,7 @@ Plot supports various types of visualizations:
 
 - **📈 Line Graphs** - Plotting data series in 2D with customizable styles
 - **📊 Scatter Plots** - Visualizing points in 2D, with optional colors based on a third axis (Z)
+- **📊 Histograms** - Visualizing distributions with optional density curves
 - **🗺️ Contour Plots** - Plotting 2D data contours (unfilled)
 - **🗺️ Filled Contour Plots** - Contours with fill colors (contourf)
 - **🖼️ Images** - Visualizing grayscale or RGB image data from matrices
@@ -124,7 +125,45 @@ func main() {
 
 ---
 
-### 3. Contour Plot
+### 3. Histogram
+
+```go
+// examples/histogram/histogram.go
+package main
+
+import (
+	"math/rand/v2"
+
+	"github.com/adynascimento/plot/plotter"
+)
+
+func main() {
+	// histogram plot
+	x := make([]float64, 1000)
+	for i := range x {
+		x[i] = rand.NormFloat64()
+	}
+
+	plt := plotter.NewPlot()
+	plt.FigSize(10, 10)
+
+	plt.Hist(x, 16,
+		plotter.WithHistFillColor(plotter.Gray),
+		plotter.WithHistDensityCurve(plotter.Red),
+	)
+	plt.Title("histogram plot example")
+	plt.XLabel("x")
+	plt.Save("histogram.png")
+}
+```
+
+**Output:**
+
+![Histogram Example](examples/histogram/histogram.png)
+
+---
+
+### 4. Contour Plot
 
 ```go
 // examples/contour/contour.go
@@ -172,7 +211,7 @@ func main() {
 
 ---
 
-### 4. Filled Contour Plot
+### 5. Filled Contour Plot
 
 ```go
 // examples/contourf/contourf.go
@@ -221,7 +260,7 @@ func main() {
 
 ---
 
-### 5. Image Display (ImShow)
+### 6. Image Display (ImShow)
 
 ```go
 // examples/image/image.go
@@ -272,7 +311,7 @@ func main() {
 
 ---
 
-### 6. Subplots
+### 7. Subplots
 
 ```go
 // examples/subplot/subplot.go
@@ -358,6 +397,7 @@ Available predefined colors:
 - `plotter.Orange`
 - `plotter.Purple`
 - `plotter.Yellow`
+- `plotter.Gray`
 
 ### Line Styles
 
@@ -419,6 +459,18 @@ plt.Contour(x, y, z,
 	plotter.WithGradient(colorgrad.Turbo()),
 	plotter.WithContourLineWidth(2),
 	plotter.WithContourLineStyle(plotter.Dashed),
+)
+```
+
+Histograms:
+
+```go
+plt.Hist(x, 16,
+	plotter.WithHistFillColor(plotter.Gray),
+	plotter.WithHistLineColor(plotter.Black),
+	plotter.WithHistLineWidth(1.5),
+	plotter.WithHistLineStyle(plotter.Solid),
+	plotter.WithHistDensityCurve(plotter.Red),
 )
 ```
 
@@ -494,6 +546,7 @@ plot/
 ├── plotter/               # Main API package
 │   ├── colorbar.go        # Colorbar implementation
 │   ├── contour.go         # Contour/ContourF implementation
+│   ├── histogram.go       # Histogram implementation
 │   ├── line.go            # Line plot options and configuration
 │   ├── models.go          # Data structures and utility functions
 │   ├── plotter.go         # Main plotting interface
@@ -502,6 +555,7 @@ plot/
 └── examples/              # Usage examples
     ├── line/              # Line plot example
     ├── scatter/           # Scatter plot example
+    ├── histogram/         # Histogram example
     ├── contour/           # Contour plot example
     ├── contourf/          # Filled contour plot example
     ├── image/             # Image display example

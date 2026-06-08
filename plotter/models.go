@@ -11,14 +11,15 @@ import (
 )
 
 type plotParameters struct {
-	plot           *plot.Plot           // initialize new plot
-	lineOptions    lineOptions          // line plotter options
-	contourOptions contourOptions       // contour plotter options
-	scatterOptions scatterOptions       // scatter plotter options
-	legends        [][]plot.Thumbnailer // legend plotter config
-	figSize        figSize              // xwidth and ywidth of the saved figure
-	figure         vgimg.PngCanvas      // figure to plot and save
-	colorBar       colorBar             // show colorbar with gradient
+	plot             *plot.Plot           // initialize new plot
+	lineOptions      lineOptions          // line plotter options
+	contourOptions   contourOptions       // contour plotter options
+	scatterOptions   scatterOptions       // scatter plotter options
+	histogramOptions histogramOptions     // histogram plotter options
+	legends          [][]plot.Thumbnailer // legend plotter config
+	figSize          figSize              // xwidth and ywidth of the saved figure
+	figure           vgimg.PngCanvas      // figure to plot and save
+	colorBar         colorBar             // show colorbar with gradient
 }
 
 type subplotParameters struct {

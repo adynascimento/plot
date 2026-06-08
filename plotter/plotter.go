@@ -15,6 +15,8 @@ import (
 	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
+	"gonum.org/v1/gonum/stat"
+	"gonum.org/v1/gonum/stat/distuv"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/font"
 	"gonum.org/v1/plot/palette"
@@ -29,6 +31,7 @@ type PlotterInterface interface {
 	Contour(x, y, z *mat.Dense, options ...func(*contourOptions))
 	ContourF(x, y, z *mat.Dense, options ...func(*contourOptions))
 	Scatter(x, y, z []float64, options ...func(*scatterOptions))
+	Hist(x []float64, n int, options ...func(*histogramOptions))
 	ImShow(x []*mat.Dense)
 	Title(str string)
 	XLabel(xlabel string)
@@ -274,6 +277,58 @@ func (plt *plotParameters) Scatter(x, y, z []float64, options ...func(*scatterOp
 		// get min and max values
 		plt.colorBar.min = floats.Min(z)
 		plt.colorBar.max = floats.Max(z)
+	}
+}
+
+// parameters to histogram plot
+func (plt *plotParameters) Hist(x []float64, n int, options ...func(*histogramOptions)) {
+	// default options
+	plt.histogramOptions = histogramOptions{
+		fillColor: Gray,
+		lineStyle: Solid,
+		lineWidth: vg.Points(1.5),
+	}
+
+	// apply additional options
+	for _, option := range options {
+		option(&plt.histogramOptions)
+	}
+
+	// prepare data to plot
+	vs := make(plotter.Values, len(x))
+	copy(vs, x)
+
+	// make a histogram plotter
+	h, _ := plotter.NewHist(vs, n)
+	h.FillColor = plt.histogramOptions.fillColor
+	h.LineStyle.Color = plt.histogramOptions.lineColor
+	h.LineStyle.Width = plt.histogramOptions.lineWidth
+	h.LineStyle.Dashes = plt.histogramOptions.lineStyle
+	h.Normalize(1)
+
+	// add the plotters to the plot
+	plt.plot.Add(h)
+
+	if plt.histogramOptions.densityCurve {
+		// calculate density curve mathematically
+		xmin, xmax, _, _ := h.DataRange()
+		xline := Linspace(xmin, xmax, 1000)
+		yline := make([]float64, len(xline))
+
+		mean, std := stat.PopMeanStdDev(x, nil)
+		distNormal := distuv.Normal{
+			Mu:    mean,
+			Sigma: std,
+		}
+		for i, x := range xline {
+			yline[i] = distNormal.Prob(x)
+		}
+
+		// add the density curve to the plot
+		plt.Plot(xline, yline,
+			WithLineColor(plt.histogramOptions.densityColor),
+			WithLineWidth(2.0),
+		)
 	}
 }
 
