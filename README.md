@@ -8,6 +8,7 @@ Plot supports various types of visualizations:
 
 - **📈 Line Graphs** - Plotting data series in 2D with customizable styles
 - **📊 Scatter Plots** - Visualizing points in 2D, with optional colors based on a third axis (Z)
+- **📊 Histograms** - Visualizing distributions with optional density curves
 - **🗺️ Contour Plots** - Plotting 2D data contours (unfilled)
 - **🗺️ Filled Contour Plots** - Contours with fill colors (contourf)
 - **🖼️ Images** - Visualizing grayscale or RGB image data from matrices
@@ -53,8 +54,8 @@ func main() {
 	plt.Plot(x.RawMatrix().Data, y.RawMatrix().Data,
 		plotter.WithLineColor(plotter.Blue),
 		plotter.WithLineStyle(plotter.DashDotted),
-		plotter.WithMarker(plotter.Circle),
-		plotter.WithMarkerSpacing(8),
+		plotter.WithLineMarker(plotter.Circle),
+		plotter.WithLineMarkerSpacing(8),
 	)
 
 	plt.Title("Line Plot Example")
@@ -124,7 +125,51 @@ func main() {
 
 ---
 
-### 3. Contour Plot
+### 3. Histogram
+
+```go
+// examples/histogram/histogram.go
+package main
+
+import (
+	"math/rand/v2"
+
+	"github.com/adynascimento/plot/plotter"
+)
+
+func main() {
+	// histogram plot
+	x := make([]float64, 5000)
+	for i := range x {
+		if rand.Float64() < 0.65 {
+			x[i] = 10 + 0.7*rand.NormFloat64()
+		} else {
+			x[i] = 12.2 + 0.6*rand.NormFloat64()
+		}
+	}
+
+	plt := plotter.NewPlot()
+	plt.FigSize(10, 10)
+
+	plt.Hist(x, 16,
+		plotter.WithHistFillColor(plotter.Gray),
+		plotter.WithHistKDECurve(plotter.Blue),
+		plotter.WithHistNormalCurve(plotter.Red),
+	)
+	plt.Title("histogram plot example")
+	plt.Legend("kde curve", "normal curve")
+	plt.XLabel("x")
+	plt.Save("histogram.png")
+}
+```
+
+**Output:**
+
+![Histogram Example](examples/histogram/histogram.png)
+
+---
+
+### 4. Contour Plot
 
 ```go
 // examples/contour/contour.go
@@ -154,8 +199,8 @@ func main() {
 	plt.FigSize(10, 10)
 
 	plt.Contour(x, y, Z,
-		plotter.WithLevels(12),
-		plotter.WithGradient(colorgrad.Turbo()),
+		plotter.WithContourLevels(12),
+		plotter.WithContourGradient(colorgrad.Turbo()),
 		plotter.WithContourLineStyle(plotter.Dashed),
 	)
 	
@@ -172,7 +217,7 @@ func main() {
 
 ---
 
-### 4. Filled Contour Plot
+### 5. Filled Contour Plot
 
 ```go
 // examples/contourf/contourf.go
@@ -202,10 +247,10 @@ func main() {
 	plt.FigSize(10, 10)
 
 	plt.ContourF(x, y, Z,
-		plotter.WithLevels(12),
-		plotter.WithGradient(colorgrad.Viridis()),
+		plotter.WithContourLevels(12),
+		plotter.WithContourGradient(colorgrad.Viridis()),
 		plotter.WithContourLines(),
-		plotter.WithColorbar(plotter.Vertical),
+		plotter.WithContourColorbar(plotter.Vertical),
 	)
 	
 	plt.Title("Filled Contour Plot")
@@ -221,7 +266,7 @@ func main() {
 
 ---
 
-### 5. Image Display (ImShow)
+### 6. Image Display (ImShow)
 
 ```go
 // examples/image/image.go
@@ -272,7 +317,7 @@ func main() {
 
 ---
 
-### 6. Subplots
+### 7. Subplots
 
 ```go
 // examples/subplot/subplot.go
@@ -358,6 +403,7 @@ Available predefined colors:
 - `plotter.Orange`
 - `plotter.Purple`
 - `plotter.Yellow`
+- `plotter.Gray`
 
 ### Line Styles
 
@@ -374,9 +420,9 @@ Available line styles:
 ### Markers
 
 ```go
-plt.Plot(x, y, plotter.WithMarker(plotter.Circle))
-plt.Plot(x, y, plotter.WithMarkerSpacing(8)) // spacing between markers
-plt.Plot(x, y, plotter.WithMarkerSize(4))
+plt.Plot(x, y, plotter.WithLineMarker(plotter.Circle))
+plt.Plot(x, y, plotter.WithLineMarkerSpacing(8)) // spacing between markers
+plt.Plot(x, y, plotter.WithLineMarkerSize(4))
 ```
 
 Available marker types:
@@ -395,9 +441,9 @@ plt.Plot(x, y,
 	plotter.WithLineColor(plotter.Blue),
 	plotter.WithLineWidth(2),
 	plotter.WithLineStyle(plotter.Dashed),
-	plotter.WithMarker(plotter.Circle),
-	plotter.WithMarkerSize(4),
-	plotter.WithMarkerSpacing(8),
+	plotter.WithLineMarker(plotter.Circle),
+	plotter.WithLineMarkerSize(4),
+	plotter.WithLineMarkerSpacing(8),
 )
 ```
 
@@ -405,7 +451,7 @@ Scatter plots:
 
 ```go
 plt.Scatter(x, y, nil,
-	plotter.WithMarkerColor(plotter.Red),
+	plotter.WithScatterMarkerColor(plotter.Red),
 	plotter.WithScatterMarker(plotter.CrossSign),
 	plotter.WithScatterMarkerSize(5),
 )
@@ -415,10 +461,22 @@ Contour and filled contour plots:
 
 ```go
 plt.Contour(x, y, z,
-	plotter.WithLevels(12),
-	plotter.WithGradient(colorgrad.Turbo()),
+	plotter.WithContourLevels(12),
+	plotter.WithContourGradient(colorgrad.Turbo()),
 	plotter.WithContourLineWidth(2),
 	plotter.WithContourLineStyle(plotter.Dashed),
+)
+```
+
+Histograms:
+
+```go
+plt.Hist(x, 16,
+	plotter.WithHistFillColor(plotter.Gray),
+	plotter.WithHistLineColor(plotter.Black),
+	plotter.WithHistLineWidth(1.5),
+	plotter.WithHistLineStyle(plotter.Solid),
+	plotter.WithHistDensityCurve(plotter.Red),
 )
 ```
 
@@ -435,7 +493,7 @@ The library supports gradients from the `colorgrad` package:
 
 ```go
 plt.Scatter(x, y, z, plotter.WithScatterGradient(colorgrad.Viridis()))
-plt.Contour(x, y, z, plotter.WithGradient(colorgrad.Turbo()))
+plt.Contour(x, y, z, plotter.WithContourGradient(colorgrad.Turbo()))
 ```
 
 ### Colorbars
@@ -447,7 +505,7 @@ For gradient-based visualizations, add a colorbar:
 plt.Scatter(x, y, z, plotter.WithScatterColorbar(plotter.Vertical))
 
 // for filled contour plots
-plt.ContourF(x, y, z, plotter.WithColorbar(plotter.Vertical))
+plt.ContourF(x, y, z, plotter.WithContourColorbar(plotter.Vertical))
 ```
 
 Colorbar orientations:
@@ -469,7 +527,7 @@ Scatter plots can be used as simple 2D point plots by passing `nil` or an empty 
 
 ```go
 plt.Scatter(x, y, nil,
-	plotter.WithMarkerColor(plotter.Blue),
+	plotter.WithScatterMarkerColor(plotter.Blue),
 	plotter.WithScatterMarker(plotter.Circle),
 )
 ```
@@ -494,6 +552,7 @@ plot/
 ├── plotter/               # Main API package
 │   ├── colorbar.go        # Colorbar implementation
 │   ├── contour.go         # Contour/ContourF implementation
+│   ├── histogram.go       # Histogram implementation
 │   ├── line.go            # Line plot options and configuration
 │   ├── models.go          # Data structures and utility functions
 │   ├── plotter.go         # Main plotting interface
@@ -502,6 +561,7 @@ plot/
 └── examples/              # Usage examples
     ├── line/              # Line plot example
     ├── scatter/           # Scatter plot example
+    ├── histogram/         # Histogram example
     ├── contour/           # Contour plot example
     ├── contourf/          # Filled contour plot example
     ├── image/             # Image display example
@@ -574,7 +634,7 @@ y := plotter.Apply(func(i, j int, v float64) float64 {
 
 ## 📝 License
 
-This project is licensed under the MIT License. See the LICENSE file for details. All computational code follows standard open-source practices and is provided as-is.
+This project is licensed under the MIT License. See the [MIT LICENSE](LICENSE) file for details.
 
 ---
 

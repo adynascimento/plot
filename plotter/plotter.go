@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 	"log"
+	"math"
 	"os"
 
 	"gioui.org/app"
@@ -15,6 +16,8 @@ import (
 	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
+	"gonum.org/v1/gonum/stat"
+	"gonum.org/v1/gonum/stat/distuv"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/font"
 	"gonum.org/v1/plot/palette"
@@ -29,6 +32,7 @@ type PlotterInterface interface {
 	Contour(x, y, z *mat.Dense, options ...func(*contourOptions))
 	ContourF(x, y, z *mat.Dense, options ...func(*contourOptions))
 	Scatter(x, y, z []float64, options ...func(*scatterOptions))
+	Hist(x []float64, n int, options ...func(*histogramOptions))
 	ImShow(x []*mat.Dense)
 	Title(str string)
 	XLabel(xlabel string)
@@ -274,6 +278,89 @@ func (plt *plotParameters) Scatter(x, y, z []float64, options ...func(*scatterOp
 		// get min and max values
 		plt.colorBar.min = floats.Min(z)
 		plt.colorBar.max = floats.Max(z)
+	}
+}
+
+// parameters to histogram plot
+func (plt *plotParameters) Hist(x []float64, n int, options ...func(*histogramOptions)) {
+	// default options
+	plt.histogramOptions = histogramOptions{
+		fillColor: Gray,
+		lineStyle: Solid,
+		lineWidth: vg.Points(1.5),
+	}
+
+	// apply additional options
+	for _, option := range options {
+		option(&plt.histogramOptions)
+	}
+
+	// prepare data to plot
+	vs := make(plotter.Values, len(x))
+	copy(vs, x)
+
+	// make a histogram plotter
+	h, _ := plotter.NewHist(vs, n)
+	h.FillColor = plt.histogramOptions.fillColor
+	h.LineStyle.Color = plt.histogramOptions.lineColor
+	h.LineStyle.Width = plt.histogramOptions.lineWidth
+	h.LineStyle.Dashes = plt.histogramOptions.lineStyle
+	h.Normalize(1)
+
+	// add the plotters to the plot
+	plt.plot.Add(h)
+
+	var std float64
+	var xline []float64
+	if plt.histogramOptions.kdeCurve || plt.histogramOptions.normalCurve {
+		xmin, xmax, _, _ := h.DataRange()
+		xline = Linspace(xmin, xmax, 1000)
+
+		// standard deviation
+		std = math.Sqrt(stat.Variance(x, nil))
+	}
+
+	// calculate density curve (kde) mathematically
+	if plt.histogramOptions.kdeCurve {
+		n := float64(len(x))
+		yline := make([]float64, len(xline))
+
+		// scott's rule
+		kernel := distuv.Normal{
+			Sigma: std * math.Pow(n, -0.2),
+		}
+		for i, xi := range xline {
+			sum := 0.0
+			for _, sample := range x {
+				sum += kernel.Prob(xi - sample)
+			}
+			yline[i] = sum / n
+		}
+
+		// add the curve to the plot
+		plt.Plot(xline, yline,
+			WithLineColor(plt.histogramOptions.kdeCurveColor),
+			WithLineWidth(2.0),
+		)
+	}
+
+	// calculate normal theoretical density curve mathematically
+	if plt.histogramOptions.normalCurve {
+		yline := make([]float64, len(xline))
+
+		distNormal := distuv.Normal{
+			Mu:    stat.Mean(x, nil),
+			Sigma: std,
+		}
+		for i, xi := range xline {
+			yline[i] = distNormal.Prob(xi)
+		}
+
+		// add the curve to the plot
+		plt.Plot(xline, yline,
+			WithLineColor(plt.histogramOptions.normalCurveColor),
+			WithLineWidth(2.0),
+		)
 	}
 }
 

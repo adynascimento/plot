@@ -25,6 +25,7 @@ var (
 	Orange  colorType = color.RGBA{255, 165, 000, 255}
 	Purple  colorType = color.RGBA{128, 000, 128, 255}
 	Yellow  colorType = color.RGBA{255, 255, 000, 255}
+	Gray    colorType = color.RGBA{128, 128, 128, 255}
 )
 
 // default colors to lines plot
@@ -84,19 +85,19 @@ func WithLineStyle(style lineStyleType) func(*lineOptions) {
 	}
 }
 
-func WithMarker(marker markerType) func(*lineOptions) {
+func WithLineMarker(marker markerType) func(*lineOptions) {
 	return func(lo *lineOptions) {
 		lo.marker = marker
 	}
 }
 
-func WithMarkerSize(size float64) func(*lineOptions) {
+func WithLineMarkerSize(size float64) func(*lineOptions) {
 	return func(lo *lineOptions) {
 		lo.markerSize = vg.Points(size)
 	}
 }
 
-func WithMarkerSpacing(spacing int) func(*lineOptions) {
+func WithLineMarkerSpacing(spacing int) func(*lineOptions) {
 	return func(lo *lineOptions) {
 		lo.markerSpacing = spacing
 	}
