@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 	"log"
+	"math"
 	"os"
 
 	"gioui.org/app"
@@ -309,24 +310,55 @@ func (plt *plotParameters) Hist(x []float64, n int, options ...func(*histogramOp
 	// add the plotters to the plot
 	plt.plot.Add(h)
 
-	if plt.histogramOptions.densityCurve {
-		// calculate density curve mathematically
+	var std float64
+	var xline []float64
+	if plt.histogramOptions.kdeCurve || plt.histogramOptions.normalCurve {
 		xmin, xmax, _, _ := h.DataRange()
-		xline := Linspace(xmin, xmax, 1000)
+		xline = Linspace(xmin, xmax, 1000)
+
+		// standard deviation
+		std = math.Sqrt(stat.Variance(x, nil))
+	}
+
+	// calculate density curve (kde) mathematically
+	if plt.histogramOptions.kdeCurve {
+		n := float64(len(x))
 		yline := make([]float64, len(xline))
 
-		mean, std := stat.PopMeanStdDev(x, nil)
-		distNormal := distuv.Normal{
-			Mu:    mean,
-			Sigma: std,
+		// scott's rule
+		kernel := distuv.Normal{
+			Sigma: std * math.Pow(n, -0.2),
 		}
-		for i, x := range xline {
-			yline[i] = distNormal.Prob(x)
+		for i, xi := range xline {
+			sum := 0.0
+			for _, sample := range x {
+				sum += kernel.Prob(xi - sample)
+			}
+			yline[i] = sum / n
 		}
 
-		// add the density curve to the plot
+		// add the curve to the plot
 		plt.Plot(xline, yline,
-			WithLineColor(plt.histogramOptions.densityColor),
+			WithLineColor(plt.histogramOptions.kdeCurveColor),
+			WithLineWidth(2.0),
+		)
+	}
+
+	// calculate normal theoretical density curve mathematically
+	if plt.histogramOptions.normalCurve {
+		yline := make([]float64, len(xline))
+
+		distNormal := distuv.Normal{
+			Mu:    stat.Mean(x, nil),
+			Sigma: std,
+		}
+		for i, xi := range xline {
+			yline[i] = distNormal.Prob(xi)
+		}
+
+		// add the curve to the plot
+		plt.Plot(xline, yline,
+			WithLineColor(plt.histogramOptions.normalCurveColor),
 			WithLineWidth(2.0),
 		)
 	}

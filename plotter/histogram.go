@@ -8,12 +8,14 @@ import (
 )
 
 type histogramOptions struct {
-	fillColor    color.Color
-	lineColor    color.Color
-	lineStyle    []vg.Length
-	lineWidth    font.Length
-	densityCurve bool
-	densityColor color.Color
+	fillColor        color.Color
+	lineColor        color.Color
+	lineStyle        []vg.Length
+	lineWidth        font.Length
+	kdeCurve         bool
+	kdeCurveColor    color.Color
+	normalCurve      bool
+	normalCurveColor color.Color
 }
 
 func WithHistFillColor(color colorType) func(*histogramOptions) {
@@ -40,9 +42,16 @@ func WithHistLineStyle(style lineStyleType) func(*histogramOptions) {
 	}
 }
 
+func WithHistKDECurve(color colorType) func(*histogramOptions) {
+	return func(ho *histogramOptions) {
+		ho.kdeCurve = true
+		ho.kdeCurveColor = color
+	}
+}
+
 func WithHistNormalCurve(color colorType) func(*histogramOptions) {
 	return func(ho *histogramOptions) {
-		ho.densityCurve = true
-		ho.densityColor = color
+		ho.normalCurve = true
+		ho.normalCurveColor = color
 	}
 }
