@@ -22,14 +22,14 @@ func main() {
 	plt.Plot(x.RawMatrix().Data, func1.RawMatrix().Data,
 		plotter.WithLineColor(plotter.Blue),
 		plotter.WithLineStyle(plotter.DashDotted),
-		plotter.WithMarker(plotter.Circle),
-		plotter.WithMarkerSpacing(8),
+		plotter.WithLineMarker(plotter.Circle),
+		plotter.WithLineMarkerSpacing(8),
 	)
 
 	plt.Plot(x.RawMatrix().Data, func2.RawMatrix().Data,
 		plotter.WithLineColor(plotter.Red),
-		plotter.WithMarker(plotter.Square),
-		plotter.WithMarkerSpacing(8),
+		plotter.WithLineMarker(plotter.Square),
+		plotter.WithLineMarkerSpacing(8),
 	)
 
 	plt.Title("plot example")

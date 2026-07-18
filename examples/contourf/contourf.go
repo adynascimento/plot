@@ -25,11 +25,11 @@ func main() {
 	plt.FigSize(10, 10)
 
 	plt.ContourF(x, y, Z,
-		plotter.WithLevels(12),
-		plotter.WithGradient(colorgrad.Viridis()),
+		plotter.WithContourLevels(12),
+		plotter.WithContourGradient(colorgrad.Viridis()),
 		plotter.WithContourLines(),
 		plotter.WithContourLineStyle(plotter.Dashed),
-		plotter.WithColorbar(plotter.Vertical),
+		plotter.WithContourColorbar(plotter.Vertical),
 	)
 	plt.Title("contourf plot example")
 	plt.XLabel("xLabel")

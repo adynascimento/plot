@@ -26,13 +26,13 @@ type colorBar struct {
 	position positionType
 }
 
-func WithLevels(levels int) func(*contourOptions) {
+func WithContourLevels(levels int) func(*contourOptions) {
 	return func(co *contourOptions) {
 		co.nLevels = levels
 	}
 }
 
-func WithGradient(gradient colorgrad.Gradient) func(*contourOptions) {
+func WithContourGradient(gradient colorgrad.Gradient) func(*contourOptions) {
 	return func(co *contourOptions) {
 		co.gradient = gradient
 		co.colorBar.gradient = gradient
@@ -57,7 +57,7 @@ func WithContourLineStyle(style lineStyleType) func(*contourOptions) {
 	}
 }
 
-func WithColorbar(position positionType) func(*contourOptions) {
+func WithContourColorbar(position positionType) func(*contourOptions) {
 	return func(co *contourOptions) {
 		if co.gradient == (colorgrad.Gradient{}) {
 			co.colorBar.show = false

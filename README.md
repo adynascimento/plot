@@ -54,8 +54,8 @@ func main() {
 	plt.Plot(x.RawMatrix().Data, y.RawMatrix().Data,
 		plotter.WithLineColor(plotter.Blue),
 		plotter.WithLineStyle(plotter.DashDotted),
-		plotter.WithMarker(plotter.Circle),
-		plotter.WithMarkerSpacing(8),
+		plotter.WithLineMarker(plotter.Circle),
+		plotter.WithLineMarkerSpacing(8),
 	)
 
 	plt.Title("Line Plot Example")
@@ -193,8 +193,8 @@ func main() {
 	plt.FigSize(10, 10)
 
 	plt.Contour(x, y, Z,
-		plotter.WithLevels(12),
-		plotter.WithGradient(colorgrad.Turbo()),
+		plotter.WithContourLevels(12),
+		plotter.WithContourGradient(colorgrad.Turbo()),
 		plotter.WithContourLineStyle(plotter.Dashed),
 	)
 	
@@ -241,10 +241,10 @@ func main() {
 	plt.FigSize(10, 10)
 
 	plt.ContourF(x, y, Z,
-		plotter.WithLevels(12),
-		plotter.WithGradient(colorgrad.Viridis()),
+		plotter.WithContourLevels(12),
+		plotter.WithContourGradient(colorgrad.Viridis()),
 		plotter.WithContourLines(),
-		plotter.WithColorbar(plotter.Vertical),
+		plotter.WithContourColorbar(plotter.Vertical),
 	)
 	
 	plt.Title("Filled Contour Plot")
@@ -414,9 +414,9 @@ Available line styles:
 ### Markers
 
 ```go
-plt.Plot(x, y, plotter.WithMarker(plotter.Circle))
-plt.Plot(x, y, plotter.WithMarkerSpacing(8)) // spacing between markers
-plt.Plot(x, y, plotter.WithMarkerSize(4))
+plt.Plot(x, y, plotter.WithLineMarker(plotter.Circle))
+plt.Plot(x, y, plotter.WithLineMarkerSpacing(8)) // spacing between markers
+plt.Plot(x, y, plotter.WithLineMarkerSize(4))
 ```
 
 Available marker types:
@@ -435,9 +435,9 @@ plt.Plot(x, y,
 	plotter.WithLineColor(plotter.Blue),
 	plotter.WithLineWidth(2),
 	plotter.WithLineStyle(plotter.Dashed),
-	plotter.WithMarker(plotter.Circle),
-	plotter.WithMarkerSize(4),
-	plotter.WithMarkerSpacing(8),
+	plotter.WithLineMarker(plotter.Circle),
+	plotter.WithLineMarkerSize(4),
+	plotter.WithLineMarkerSpacing(8),
 )
 ```
 
@@ -445,7 +445,7 @@ Scatter plots:
 
 ```go
 plt.Scatter(x, y, nil,
-	plotter.WithMarkerColor(plotter.Red),
+	plotter.WithScatterMarkerColor(plotter.Red),
 	plotter.WithScatterMarker(plotter.CrossSign),
 	plotter.WithScatterMarkerSize(5),
 )
@@ -455,8 +455,8 @@ Contour and filled contour plots:
 
 ```go
 plt.Contour(x, y, z,
-	plotter.WithLevels(12),
-	plotter.WithGradient(colorgrad.Turbo()),
+	plotter.WithContourLevels(12),
+	plotter.WithContourGradient(colorgrad.Turbo()),
 	plotter.WithContourLineWidth(2),
 	plotter.WithContourLineStyle(plotter.Dashed),
 )
@@ -487,7 +487,7 @@ The library supports gradients from the `colorgrad` package:
 
 ```go
 plt.Scatter(x, y, z, plotter.WithScatterGradient(colorgrad.Viridis()))
-plt.Contour(x, y, z, plotter.WithGradient(colorgrad.Turbo()))
+plt.Contour(x, y, z, plotter.WithContourGradient(colorgrad.Turbo()))
 ```
 
 ### Colorbars
@@ -499,7 +499,7 @@ For gradient-based visualizations, add a colorbar:
 plt.Scatter(x, y, z, plotter.WithScatterColorbar(plotter.Vertical))
 
 // for filled contour plots
-plt.ContourF(x, y, z, plotter.WithColorbar(plotter.Vertical))
+plt.ContourF(x, y, z, plotter.WithContourColorbar(plotter.Vertical))
 ```
 
 Colorbar orientations:
@@ -521,7 +521,7 @@ Scatter plots can be used as simple 2D point plots by passing `nil` or an empty 
 
 ```go
 plt.Scatter(x, y, nil,
-	plotter.WithMarkerColor(plotter.Blue),
+	plotter.WithScatterMarkerColor(plotter.Blue),
 	plotter.WithScatterMarker(plotter.Circle),
 )
 ```
@@ -628,7 +628,7 @@ y := plotter.Apply(func(i, j int, v float64) float64 {
 
 ## 📝 License
 
-This project is licensed under the MIT License. See the LICENSE file for details. All computational code follows standard open-source practices and is provided as-is.
+This project is licensed under the MIT License. See the [MIT LICENSE](LICENSE) file for details.
 
 ---
 

@@ -85,19 +85,19 @@ func WithLineStyle(style lineStyleType) func(*lineOptions) {
 	}
 }
 
-func WithMarker(marker markerType) func(*lineOptions) {
+func WithLineMarker(marker markerType) func(*lineOptions) {
 	return func(lo *lineOptions) {
 		lo.marker = marker
 	}
 }
 
-func WithMarkerSize(size float64) func(*lineOptions) {
+func WithLineMarkerSize(size float64) func(*lineOptions) {
 	return func(lo *lineOptions) {
 		lo.markerSize = vg.Points(size)
 	}
 }
 
-func WithMarkerSpacing(spacing int) func(*lineOptions) {
+func WithLineMarkerSpacing(spacing int) func(*lineOptions) {
 	return func(lo *lineOptions) {
 		lo.markerSpacing = spacing
 	}

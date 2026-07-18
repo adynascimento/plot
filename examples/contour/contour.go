@@ -25,8 +25,8 @@ func main() {
 	plt.FigSize(10, 10)
 
 	plt.Contour(x, y, Z,
-		plotter.WithLevels(12),
-		plotter.WithGradient(colorgrad.Turbo()),
+		plotter.WithContourLevels(12),
+		plotter.WithContourGradient(colorgrad.Turbo()),
 		plotter.WithContourLineStyle(plotter.Dashed),
 	)
 	plt.Title("contour plot example")

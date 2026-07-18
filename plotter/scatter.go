@@ -17,7 +17,7 @@ type scatterOptions struct {
 	colorBar   colorBar
 }
 
-func WithMarkerColor(color colorType) func(*scatterOptions) {
+func WithScatterMarkerColor(color colorType) func(*scatterOptions) {
 	return func(so *scatterOptions) {
 		so.color = color
 	}
