@@ -135,32 +135,36 @@ func (plt *plotParameters) Show() {
 		plt.DrawPlot()
 	}
 
+	// create window
+	plt.window = new(app.Window)
+
 	// graphical window creation
-	imgData := plt.figure.Image()
+	imgBounds := plt.figure.Image().Bounds()
+	plt.window.Option(
+		app.Title("Plot Viewer"),
+		app.Size(
+			unit.Dp(float32(imgBounds.Dx())),
+			unit.Dp(float32(imgBounds.Dy())),
+		),
+	)
+
 	go func() {
-		window := new(app.Window)
-		window.Option(
-			app.Title("Plot Viewer"),
-			app.Size(
-				unit.Dp(float32(imgData.Bounds().Dx())),
-				unit.Dp(float32(imgData.Bounds().Dy())),
-			),
-		)
-
-		img := widget.Image{
-			Src:      paint.NewImageOp(imgData),
-			Fit:      widget.Contain,
-			Position: layout.Center,
-			Scale:    1,
-		}
-
 		var ops op.Ops
 		for {
-			switch e := window.Event().(type) {
+			switch e := plt.window.Event().(type) {
 			case app.DestroyEvent:
 				os.Exit(0)
 			case app.FrameEvent:
 				gtx := app.NewContext(&ops, e)
+
+				// always use the latest rendered image.
+				img := widget.Image{
+					Src:      paint.NewImageOp(plt.figure.Image()),
+					Fit:      widget.Contain,
+					Position: layout.Center,
+					Scale:    1,
+				}
+
 				img.Layout(gtx)
 				e.Frame(gtx.Ops)
 			}

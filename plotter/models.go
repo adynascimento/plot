@@ -3,6 +3,7 @@ package plotter
 import (
 	"image/color"
 
+	"gioui.org/app"
 	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/plot"
@@ -19,6 +20,7 @@ type plotParameters struct {
 	legends          [][]plot.Thumbnailer // legend plotter config
 	figSize          figSize              // xwidth and ywidth of the saved figure
 	figure           vgimg.PngCanvas      // figure to plot and save
+	window           *app.Window          // window to show the figure
 	colorBar         colorBar             // show colorbar with gradient
 }
 
