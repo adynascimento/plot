@@ -26,7 +26,7 @@ func main() {
 		plotter.WithHistNormalCurve(plotter.Red),
 	)
 	plt.Title("histogram plot example")
-	plt.Legend("kde curve", "normal curve")
+	plt.Legend("kde curve", "normal curve").Location(plotter.UpperRight)
 	plt.XLabel("x")
 
 	plt.Show()

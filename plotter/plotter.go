@@ -37,7 +37,7 @@ type PlotterInterface interface {
 	Title(str string)
 	XLabel(xlabel string)
 	YLabel(ylabel string)
-	Legend(str ...string)
+	Legend(str ...string) LegendLocation
 	XLim(xmin, xmax float64)
 	YLim(ymin, ymax float64)
 	Grid()
@@ -513,16 +513,6 @@ func (plt *plotParameters) XLabel(xlabel string) {
 // ylabel for all plots
 func (plt *plotParameters) YLabel(ylabel string) {
 	plt.plot.Y.Label.Text = ylabel
-}
-
-// legend mainly used in lines plots
-func (plt *plotParameters) Legend(str ...string) {
-	// legend style
-	for i, legend := range str {
-		plt.plot.Legend.Add(legend, plt.legends[i]...)
-		plt.plot.Legend.XOffs = -5. * vg.Millimeter
-		plt.plot.Legend.Padding = vg.Millimeter
-	}
 }
 
 // set the x-axis vies limits
