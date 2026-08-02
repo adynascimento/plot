@@ -3,6 +3,7 @@ package plotter
 import (
 	"image/color"
 
+	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/font"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
@@ -64,6 +65,60 @@ type params struct {
 	marker        draw.GlyphDrawer
 	markerSize    font.Length
 	markerSpacing int
+}
+
+// parameters to lines plots
+func (plt *plotParameters) Plot(x, y []float64, options ...func(*lineOptions)) {
+	var thumbs []plot.Thumbnailer
+	var plotters []plot.Plotter
+
+	// default options
+	plt.lineOptions.params = params{
+		lineStyle:     Solid,
+		lineWidth:     vg.Points(1.5),
+		markerSize:    vg.Points(3),
+		markerSpacing: 1,
+	}
+
+	// apply additional options
+	for _, option := range options {
+		option(&plt.lineOptions)
+	}
+
+	// automatic color assignment
+	if plt.lineOptions.color == nil {
+		plt.lineOptions.color = plt.nextColor()
+	}
+
+	// various plots to the figure
+	pts := make(plotter.XYs, len(x))
+	for j := range pts {
+		pts[j].X = x[j]
+		pts[j].Y = y[j]
+	}
+
+	// make a line plotter and set its style.
+	line, _ := plotter.NewLine(pts)
+	line.Color = plt.lineOptions.color
+	line.LineStyle.Width = plt.lineOptions.lineWidth
+	line.LineStyle.Dashes = plt.lineOptions.lineStyle
+
+	thumbs = append(thumbs, line)
+	plotters = append(plotters, line)
+
+	// add markers to line plotter
+	if plt.lineOptions.marker != nil {
+		scatter := plt.addMarkers(pts)
+
+		thumbs = append(thumbs, scatter)
+		plotters = append(plotters, scatter)
+	}
+
+	// thumbs for the legends
+	plt.legends = append(plt.legends, thumbs)
+
+	// add the plotters to the plot
+	plt.plot.Add(plotters...)
 }
 
 func WithLineColor(color colorType) func(*lineOptions) {
