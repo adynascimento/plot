@@ -35,7 +35,7 @@ type colorBar struct {
 // parameters to contour plot
 func (plt *plotParameters) Contour(x, y, z *mat.Dense, options ...func(*contourOptions)) {
 	// default options
-	plt.contourOptions = contourOptions{
+	plt.contour = contourOptions{
 		nLevels: 10,
 		lineSettings: lineSettings{
 			style: Solid,
@@ -45,25 +45,25 @@ func (plt *plotParameters) Contour(x, y, z *mat.Dense, options ...func(*contourO
 
 	// apply additional options
 	for _, option := range options {
-		option(&plt.contourOptions)
+		option(&plt.contour)
 	}
-	plt.colorBar = plt.contourOptions.colorBar
+	plt.colorBar = plt.contour.colorBar
 
 	// prepare data to plot
 	m := unitGrid{x: x, y: y, Data: z}
 
 	var p palette.Palette
-	if plt.contourOptions.gradient != (colorgrad.Gradient{}) {
+	if plt.contour.gradient != (colorgrad.Gradient{}) {
 		// add colormap and make a contour plotter
-		p = &colorsGradient{colorList: plt.contourOptions.gradient.Colors(uint(plt.contourOptions.nLevels))}
+		p = &colorsGradient{colorList: plt.contour.gradient.Colors(uint(plt.contour.nLevels))}
 	}
 
-	levels := Linspace(mat.Min(z), mat.Max(z), plt.contourOptions.nLevels)
+	levels := Linspace(mat.Min(z), mat.Max(z), plt.contour.nLevels)
 	c := plotter.NewContour(m, levels, p)
 	c.LineStyles = []draw.LineStyle{{
 		Color:  color.Black,
-		Width:  plt.contourOptions.lineSettings.width,
-		Dashes: plt.contourOptions.lineSettings.style,
+		Width:  plt.contour.lineSettings.width,
+		Dashes: plt.contour.lineSettings.style,
 	}}
 
 	// add the plotters to the plot
@@ -79,7 +79,7 @@ func (plt *plotParameters) Contour(x, y, z *mat.Dense, options ...func(*contourO
 // parameters to contourf plot
 func (plt *plotParameters) ContourF(x, y, z *mat.Dense, options ...func(*contourOptions)) {
 	// default options
-	plt.contourOptions = contourOptions{
+	plt.contour = contourOptions{
 		nLevels:  10,
 		gradient: colorgrad.Viridis(),
 		lineSettings: lineSettings{
@@ -93,15 +93,15 @@ func (plt *plotParameters) ContourF(x, y, z *mat.Dense, options ...func(*contour
 
 	// apply additional options
 	for _, option := range options {
-		option(&plt.contourOptions)
+		option(&plt.contour)
 	}
-	plt.colorBar = plt.contourOptions.colorBar
+	plt.colorBar = plt.contour.colorBar
 
 	// prepare data to plot
 	m := unitGrid{x: x, y: y, Data: z}
 
 	// add colormap and make a heatmap plotter
-	p := colorsGradient{colorList: plt.contourOptions.gradient.Colors(uint(plt.contourOptions.nLevels))}
+	p := colorsGradient{colorList: plt.contour.gradient.Colors(uint(plt.contour.nLevels))}
 	raster := plotter.NewHeatMap(m, &p)
 	raster.Rasterized = true
 
@@ -114,14 +114,14 @@ func (plt *plotParameters) ContourF(x, y, z *mat.Dense, options ...func(*contour
 		plt.colorBar.max = raster.Max
 	}
 
-	if plt.contourOptions.lineSettings.show {
+	if plt.contour.lineSettings.show {
 		// add contour lines to contourf
-		levels := Linspace(mat.Min(z), mat.Max(z), plt.contourOptions.nLevels)
+		levels := Linspace(mat.Min(z), mat.Max(z), plt.contour.nLevels)
 		c := plotter.NewContour(m, levels, nil)
 		c.LineStyles = []draw.LineStyle{{
 			Color:  Black,
-			Width:  plt.contourOptions.lineSettings.width,
-			Dashes: plt.contourOptions.lineSettings.style,
+			Width:  plt.contour.lineSettings.width,
+			Dashes: plt.contour.lineSettings.style,
 		}}
 
 		// add the plotters to the plot

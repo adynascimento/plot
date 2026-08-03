@@ -73,7 +73,7 @@ func (plt *plotParameters) Plot(x, y []float64, options ...func(*lineOptions)) {
 	var plotters []plot.Plotter
 
 	// default options
-	plt.lineOptions.params = params{
+	plt.line.params = params{
 		lineStyle:     Solid,
 		lineWidth:     vg.Points(1.5),
 		markerSize:    vg.Points(3),
@@ -82,12 +82,12 @@ func (plt *plotParameters) Plot(x, y []float64, options ...func(*lineOptions)) {
 
 	// apply additional options
 	for _, option := range options {
-		option(&plt.lineOptions)
+		option(&plt.line)
 	}
 
 	// automatic color assignment
-	if plt.lineOptions.color == nil {
-		plt.lineOptions.color = plt.nextColor()
+	if plt.line.color == nil {
+		plt.line.color = plt.nextColor()
 	}
 
 	// various plots to the figure
@@ -99,15 +99,15 @@ func (plt *plotParameters) Plot(x, y []float64, options ...func(*lineOptions)) {
 
 	// make a line plotter and set its style.
 	line, _ := plotter.NewLine(pts)
-	line.Color = plt.lineOptions.color
-	line.LineStyle.Width = plt.lineOptions.lineWidth
-	line.LineStyle.Dashes = plt.lineOptions.lineStyle
+	line.Color = plt.line.color
+	line.LineStyle.Width = plt.line.lineWidth
+	line.LineStyle.Dashes = plt.line.lineStyle
 
 	thumbs = append(thumbs, line)
 	plotters = append(plotters, line)
 
 	// add markers to line plotter
-	if plt.lineOptions.marker != nil {
+	if plt.line.marker != nil {
 		scatter := plt.addMarkers(pts)
 
 		thumbs = append(thumbs, scatter)
@@ -161,10 +161,10 @@ func WithLineMarkerSpacing(spacing int) func(*lineOptions) {
 // get the next color in the sequence
 func (plt *plotParameters) nextColor() color.Color {
 	for {
-		c := colors[plt.lineOptions.colorIndex]
-		plt.lineOptions.colorIndex = (plt.lineOptions.colorIndex + 1) % len(colors)
-		if !plt.lineOptions.usedColors[c] {
-			plt.lineOptions.usedColors[c] = true
+		c := colors[plt.line.colorIndex]
+		plt.line.colorIndex = (plt.line.colorIndex + 1) % len(colors)
+		if !plt.line.usedColors[c] {
+			plt.line.usedColors[c] = true
 			return c
 		}
 	}
@@ -172,15 +172,15 @@ func (plt *plotParameters) nextColor() color.Color {
 
 // add markers to line plotter
 func (plt *plotParameters) addMarkers(pts plotter.XYs) *plotter.Scatter {
-	spacing := plt.lineOptions.markerSpacing
+	spacing := plt.line.markerSpacing
 	spacedPts := make(plotter.XYs, (len(pts)+spacing-1)/spacing)
 	for i := 0; i < len(spacedPts); i++ {
 		spacedPts[i] = pts[i*spacing]
 	}
 	scatter, _ := plotter.NewScatter(spacedPts)
-	scatter.GlyphStyle.Shape = plt.lineOptions.marker
-	scatter.GlyphStyle.Radius = plt.lineOptions.markerSize
-	scatter.Color = plt.lineOptions.color
+	scatter.GlyphStyle.Shape = plt.line.marker
+	scatter.GlyphStyle.Radius = plt.line.markerSize
+	scatter.Color = plt.line.color
 
 	return scatter
 }

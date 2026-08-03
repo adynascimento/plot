@@ -25,7 +25,7 @@ type histogramOptions struct {
 // parameters to histogram plot
 func (plt *plotParameters) Hist(x []float64, n int, options ...func(*histogramOptions)) {
 	// default options
-	plt.histogramOptions = histogramOptions{
+	plt.histogram = histogramOptions{
 		fillColor: Gray,
 		lineStyle: Solid,
 		lineWidth: vg.Points(1.5),
@@ -33,7 +33,7 @@ func (plt *plotParameters) Hist(x []float64, n int, options ...func(*histogramOp
 
 	// apply additional options
 	for _, option := range options {
-		option(&plt.histogramOptions)
+		option(&plt.histogram)
 	}
 
 	// prepare data to plot
@@ -42,10 +42,10 @@ func (plt *plotParameters) Hist(x []float64, n int, options ...func(*histogramOp
 
 	// make a histogram plotter
 	h, _ := plotter.NewHist(vs, n)
-	h.FillColor = plt.histogramOptions.fillColor
-	h.LineStyle.Color = plt.histogramOptions.lineColor
-	h.LineStyle.Width = plt.histogramOptions.lineWidth
-	h.LineStyle.Dashes = plt.histogramOptions.lineStyle
+	h.FillColor = plt.histogram.fillColor
+	h.LineStyle.Color = plt.histogram.lineColor
+	h.LineStyle.Width = plt.histogram.lineWidth
+	h.LineStyle.Dashes = plt.histogram.lineStyle
 	h.Normalize(1)
 
 	// add the plotters to the plot
@@ -53,7 +53,7 @@ func (plt *plotParameters) Hist(x []float64, n int, options ...func(*histogramOp
 
 	var std float64
 	var xline []float64
-	if plt.histogramOptions.kdeCurve || plt.histogramOptions.normalCurve {
+	if plt.histogram.kdeCurve || plt.histogram.normalCurve {
 		xmin, xmax, _, _ := h.DataRange()
 		xline = Linspace(xmin, xmax, 1000)
 
@@ -62,7 +62,7 @@ func (plt *plotParameters) Hist(x []float64, n int, options ...func(*histogramOp
 	}
 
 	// calculate density curve (kde) mathematically
-	if plt.histogramOptions.kdeCurve {
+	if plt.histogram.kdeCurve {
 		n := float64(len(x))
 		yline := make([]float64, len(xline))
 
@@ -80,13 +80,13 @@ func (plt *plotParameters) Hist(x []float64, n int, options ...func(*histogramOp
 
 		// add the curve to the plot
 		plt.Plot(xline, yline,
-			WithLineColor(plt.histogramOptions.kdeCurveColor),
+			WithLineColor(plt.histogram.kdeCurveColor),
 			WithLineWidth(2.0),
 		)
 	}
 
 	// calculate normal theoretical density curve mathematically
-	if plt.histogramOptions.normalCurve {
+	if plt.histogram.normalCurve {
 		yline := make([]float64, len(xline))
 
 		distNormal := distuv.Normal{
@@ -99,7 +99,7 @@ func (plt *plotParameters) Hist(x []float64, n int, options ...func(*histogramOp
 
 		// add the curve to the plot
 		plt.Plot(xline, yline,
-			WithLineColor(plt.histogramOptions.normalCurveColor),
+			WithLineColor(plt.histogram.normalCurveColor),
 			WithLineWidth(2.0),
 		)
 	}

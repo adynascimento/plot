@@ -23,7 +23,7 @@ type scatterOptions struct {
 // parameters to scatter plot
 func (plt *plotParameters) Scatter(x, y, z []float64, options ...func(*scatterOptions)) {
 	// default options
-	plt.scatterOptions = scatterOptions{
+	plt.scatter = scatterOptions{
 		color:      Blue,
 		marker:     Circle,
 		markerSize: vg.Points(3),
@@ -31,9 +31,9 @@ func (plt *plotParameters) Scatter(x, y, z []float64, options ...func(*scatterOp
 
 	// apply additional options
 	for _, option := range options {
-		option(&plt.scatterOptions)
+		option(&plt.scatter)
 	}
-	plt.colorBar = plt.scatterOptions.colorBar
+	plt.colorBar = plt.scatter.colorBar
 
 	// prepare data to plot
 	var xys plotter.XYer
@@ -60,17 +60,17 @@ func (plt *plotParameters) Scatter(x, y, z []float64, options ...func(*scatterOp
 		log.Panic(err)
 	}
 	sc.GlyphStyle = draw.GlyphStyle{
-		Color:  plt.scatterOptions.color,
-		Radius: plt.scatterOptions.markerSize,
-		Shape:  plt.scatterOptions.marker,
+		Color:  plt.scatter.color,
+		Radius: plt.scatter.markerSize,
+		Shape:  plt.scatter.marker,
 	}
 
-	if plt.scatterOptions.gradient != (colorgrad.Gradient{}) {
+	if plt.scatter.gradient != (colorgrad.Gradient{}) {
 		// specify style and color for individual points.
 		sc.GlyphStyleFunc = func(i int) draw.GlyphStyle {
-			colors := plt.scatterOptions.gradient.Colors(uint(len(z)))
-			return draw.GlyphStyle{Color: colors[i], Radius: plt.scatterOptions.markerSize,
-				Shape: plt.scatterOptions.marker}
+			colors := plt.scatter.gradient.Colors(uint(len(z)))
+			return draw.GlyphStyle{Color: colors[i], Radius: plt.scatter.markerSize,
+				Shape: plt.scatter.marker}
 		}
 	}
 

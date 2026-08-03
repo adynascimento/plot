@@ -12,17 +12,17 @@ import (
 )
 
 type plotParameters struct {
-	plot             *plot.Plot           // initialize new plot
-	lineOptions      lineOptions          // line plotter options
-	contourOptions   contourOptions       // contour plotter options
-	scatterOptions   scatterOptions       // scatter plotter options
-	histogramOptions histogramOptions     // histogram plotter options
-	legends          [][]plot.Thumbnailer // legend plotter config
-	figSize          figSize              // xwidth and ywidth of the saved figure
-	figure           vgimg.PngCanvas      // figure to plot and save
-	window           *app.Window          // window to show the figure
-	animation        *animationOptions    // animation options
-	colorBar         colorBar             // show colorbar with gradient
+	plot      *plot.Plot           // initialize new plot
+	line      lineOptions          // line plotter options
+	contour   contourOptions       // contour plotter options
+	scatter   scatterOptions       // scatter plotter options
+	histogram histogramOptions     // histogram plotter options
+	legends   [][]plot.Thumbnailer // legend plotter config
+	figSize   figSize              // xwidth and ywidth of the saved figure
+	figure    vgimg.PngCanvas      // figure to plot and save
+	window    *app.Window          // window to show the figure
+	animation *animationOptions    // animation options
+	colorBar  colorBar             // show colorbar with gradient
 }
 
 type subplotParameters struct {

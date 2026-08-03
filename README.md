@@ -276,7 +276,7 @@ func main() {
 			plotter.WithLineWidth(2),
 		)
 
-		plt.Title("Animation Example")
+		plt.Title("animation example")
 		plt.Legend("sin", "cos").Location(plotter.LowerLeft)
 		plt.XLabel("xLabel")
 		plt.YLabel("yLabel")

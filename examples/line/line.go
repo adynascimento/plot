@@ -39,4 +39,5 @@ func main() {
 	plt.Grid()
 
 	plt.Save("line.png")
+	plt.Show()
 }

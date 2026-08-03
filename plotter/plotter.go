@@ -48,7 +48,7 @@ type Plot interface {
 func NewPlot() Plot {
 	return &plotParameters{
 		plot: plot.New(),
-		lineOptions: lineOptions{
+		line: lineOptions{
 			usedColors: make(map[color.Color]bool),
 		},
 		figSize: figSize{
@@ -208,7 +208,7 @@ func (plt *plotParameters) Save(file string) {
 // clear the plots
 func (plt *plotParameters) Clear() {
 	plt.plot = plot.New()
-	plt.lineOptions.usedColors = make(map[color.Color]bool)
+	plt.line.usedColors = make(map[color.Color]bool)
 }
 
 // size of the saved figure
