@@ -7,11 +7,12 @@ Plot is an elegant and intuitive wrapper for the [gonum/plot](https://github.com
 Plot supports various types of visualizations:
 
 - **📈 Line Graphs** - Plotting data series in 2D with customizable styles
-- **📊 Scatter Plots** - Visualizing points in 2D, with optional colors based on a third axis (Z)
+- **🔵 Scatter Plots** - Visualizing points in 2D, with optional colors based on a third axis (Z)
 - **📊 Histograms** - Visualizing distributions with optional density curves
 - **🗺️ Contour Plots** - Plotting 2D data contours (unfilled)
-- **🗺️ Filled Contour Plots** - Contours with fill colors (contourf)
+- **🎨 Filled Contour Plots** - Contours with fill colors (contourf)
 - **🖼️ Images** - Visualizing grayscale or RGB image data from matrices
+- **🎬 Animations** - Creating animated plots with customizable frame intervals and optional looping
 - **🔲 Subplots** - Organizing multiple plots in a single figure
 
 Common plot configuration includes:
@@ -22,7 +23,7 @@ Common plot configuration includes:
 - **Grid** for better readability
 - **Color gradients** using the colorgrad library for scatter, contour, and filled contour plots
 - **Customizable figure size**
-- **Save** to PNG files or **Show** in a graphical window
+- **Save** static plots as PNG files or animations as GIF files, or **Show** them in a graphical window
 
 ## 🎯 Usage Examples
 
@@ -242,7 +243,66 @@ func main() {
 
 ---
 
-### 7. Subplots
+### 7. Animations
+
+```go
+// examples/animation/animation.go
+package main
+
+import (
+	"github.com/adynascimento/plot/plotter"
+	"gonum.org/v1/gonum/mat"
+)
+
+func main() {
+	plt := plotter.NewPlot()
+	plt.FigSize(11, 10)
+
+	update := func(frame int) {
+		plt.Clear()
+
+		// recompute the wave every frame
+		phase := float64(frame) * 0.10
+		y1 := plotter.Apply(func(_, _ int, v float64) float64 { return math.Sin(2*v - phase) }, x)
+		y2 := plotter.Apply(func(_, _ int, v float64) float64 { return math.Cos(2*v - phase) }, x)
+
+		plt.Plot(x.RawMatrix().Data, y1.RawMatrix().Data,
+			plotter.WithLineColor(plotter.Blue),
+			plotter.WithLineWidth(2),
+		)
+
+		plt.Plot(x.RawMatrix().Data, y2.RawMatrix().Data,
+			plotter.WithLineColor(plotter.Red),
+			plotter.WithLineWidth(2),
+		)
+
+		plt.Title("Animation Example")
+		plt.Legend("sin", "cos").Location(plotter.LowerLeft)
+		plt.XLabel("xLabel")
+		plt.YLabel("yLabel")
+		plt.XLim(0, 2*math.Pi)
+		plt.YLim(-1.2, 1.2)
+		plt.Grid()
+	}
+
+	nFrames := 240
+	plt.Animation(nFrames, update,
+		plotter.WithAnimationInterval(40*time.Millisecond),
+		plotter.WithAnimationLoop(true),
+	)
+
+	plt.Save("animation.gif")
+	plt.Show()
+}
+```
+
+**Output:**
+
+![Animation Example](examples/animation/animation.gif)
+
+---
+
+### 8. Subplots
 
 ```go
 // examples/subplot/subplot.go
@@ -379,7 +439,7 @@ plt.Hist(x, 16,
 	plotter.WithHistLineColor(plotter.Black),
 	plotter.WithHistLineWidth(1.5),
 	plotter.WithHistLineStyle(plotter.Solid),
-	plotter.WithHistDensityCurve(plotter.Red),
+	plotter.WithHistKDECurve(plotter.Red),
 )
 ```
 
@@ -417,7 +477,7 @@ Colorbar orientations:
 
 ### Displaying Figures
 
-Use `Save` to write the figure to a PNG file, or `Show` to open the rendered plot in a graphical window:
+Use `Save` to write the figure to a PNG file or an animation as a GIF file. Use `Show` to open the rendered plot in a graphical window:
 
 ```go
 plt.Save("plot.png")

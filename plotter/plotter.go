@@ -38,9 +38,11 @@ type PlotterInterface interface {
 
 type Plot interface {
 	PlotterInterface
+	Animation(nFrames int, update func(frame int), options ...func(*animationOptions))
 	FigSize(xwidth, ywidth int)
 	Save(name string)
 	Show()
+	Clear()
 }
 
 func NewPlot() Plot {
@@ -157,6 +159,11 @@ func (plt *plotParameters) Show() {
 			case app.FrameEvent:
 				gtx := app.NewContext(&ops, e)
 
+				// draw animation frame
+				if plt.animation != nil {
+					plt.drawAnimationFrame(gtx, e)
+				}
+
 				// always use the latest rendered image.
 				img := widget.Image{
 					Src:      paint.NewImageOp(plt.figure.Image()),
@@ -174,14 +181,19 @@ func (plt *plotParameters) Show() {
 	app.Main()
 }
 
-// save the plot to an image file
+// save the plot to a file
 func (plt *plotParameters) Save(file string) {
-	// save the plot to a PNG file.
+	// save the animation to a GIF file
+	if plt.animation != nil {
+		plt.saveAnimation(file)
+		return
+	}
+
+	// save the plot to a static PNG file.
 	if plt.figure.Image() == nil {
 		plt.DrawPlot()
 	}
 
-	// save the image to a file
 	w, err := os.Create(file)
 	if err != nil {
 		panic(err)
@@ -191,6 +203,12 @@ func (plt *plotParameters) Save(file string) {
 	if _, err := plt.figure.WriteTo(w); err != nil {
 		panic(err)
 	}
+}
+
+// clear the plots
+func (plt *plotParameters) Clear() {
+	plt.plot = plot.New()
+	plt.lineOptions.usedColors = make(map[color.Color]bool)
 }
 
 // size of the saved figure

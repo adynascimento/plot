@@ -21,6 +21,7 @@ type plotParameters struct {
 	figSize          figSize              // xwidth and ywidth of the saved figure
 	figure           vgimg.PngCanvas      // figure to plot and save
 	window           *app.Window          // window to show the figure
+	animation        *animationOptions    // animation options
 	colorBar         colorBar             // show colorbar with gradient
 }
 
