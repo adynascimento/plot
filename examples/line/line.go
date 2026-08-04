@@ -35,8 +35,9 @@ func main() {
 	plt.Title("plot example")
 	plt.XLabel("xLabel")
 	plt.YLabel("yLabel")
-	plt.Legend("line1", "line2")
+	plt.Legend("line1", "line2").Location(plotter.LowerLeft)
 	plt.Grid()
 
 	plt.Save("line.png")
+	plt.Show()
 }

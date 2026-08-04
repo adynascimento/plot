@@ -7,11 +7,12 @@ Plot is an elegant and intuitive wrapper for the [gonum/plot](https://github.com
 Plot supports various types of visualizations:
 
 - **📈 Line Graphs** - Plotting data series in 2D with customizable styles
-- **📊 Scatter Plots** - Visualizing points in 2D, with optional colors based on a third axis (Z)
+- **🔵 Scatter Plots** - Visualizing points in 2D, with optional colors based on a third axis (Z)
 - **📊 Histograms** - Visualizing distributions with optional density curves
 - **🗺️ Contour Plots** - Plotting 2D data contours (unfilled)
-- **🗺️ Filled Contour Plots** - Contours with fill colors (contourf)
+- **🎨 Filled Contour Plots** - Contours with fill colors (contourf)
 - **🖼️ Images** - Visualizing grayscale or RGB image data from matrices
+- **🎬 Animations** - Creating animated plots with customizable frame intervals and optional looping
 - **🔲 Subplots** - Organizing multiple plots in a single figure
 
 Common plot configuration includes:
@@ -22,7 +23,7 @@ Common plot configuration includes:
 - **Grid** for better readability
 - **Color gradients** using the colorgrad library for scatter, contour, and filled contour plots
 - **Customizable figure size**
-- **Save** to PNG files or **Show** in a graphical window
+- **Save** static plots as PNG files or animations as GIF files, or **Show** them in a graphical window
 
 ## 🎯 Usage Examples
 
@@ -33,34 +34,32 @@ Common plot configuration includes:
 package main
 
 import (
-	"math"
 	"github.com/adynascimento/plot/plotter"
 	"gonum.org/v1/gonum/mat"
 )
 
 func main() {
-	// create data
-	x := mat.NewDense(1, 300, plotter.Linspace(0., 1., 300))
-	
-	applyFunc := func(_, _ int, v float64) float64 { 
-		return math.Sin(15. * v) 
-	}
-	y := plotter.Apply(applyFunc, x)
-
 	// create and configure plot
 	plt := plotter.NewPlot()
-	plt.FigSize(10, 8)
-	
-	plt.Plot(x.RawMatrix().Data, y.RawMatrix().Data,
+	plt.FigSize(11, 10)
+
+	plt.Plot(x.RawMatrix().Data, func1.RawMatrix().Data,
 		plotter.WithLineColor(plotter.Blue),
 		plotter.WithLineStyle(plotter.DashDotted),
 		plotter.WithLineMarker(plotter.Circle),
 		plotter.WithLineMarkerSpacing(8),
 	)
 
-	plt.Title("Line Plot Example")
-	plt.XLabel("X Axis")
-	plt.YLabel("Y Axis")
+	plt.Plot(x.RawMatrix().Data, func2.RawMatrix().Data,
+		plotter.WithLineColor(plotter.Red),
+		plotter.WithLineMarker(plotter.Square),
+		plotter.WithLineMarkerSpacing(8),
+	)
+
+	plt.Title("plot example")
+	plt.XLabel("xLabel")
+	plt.YLabel("yLabel")
+	plt.Legend("line1", "line2").Location(plotter.LowerLeft)
 	plt.Grid()
 	
 	// save figure
@@ -81,40 +80,26 @@ func main() {
 package main
 
 import (
-	"math"
-	"math/rand"
 	"github.com/adynascimento/plot/plotter"
 	"github.com/mazznoer/colorgrad"
 )
 
 func main() {
-	rnd := rand.New(rand.NewSource(1))
-	n := 500
-	
-	theta := plotter.Linspace(0, 1, n)
-	x := make([]float64, n)
-	y := make([]float64, n)
-	z := make([]float64, n)
-	
-	for i := range x {
-		x[i] = math.Exp(theta[i]) * math.Sin(100.*theta[i])
-		y[i] = math.Exp(theta[i]) * math.Cos(100.*theta[i])
-		z[i] = math.Cos(30. * rnd.Float64())
-	}
-
 	plt := plotter.NewPlot()
 	plt.FigSize(10, 9)
 
-	plt.Scatter(x, y, z,
+	plt.Scatter(x, y, Z,
 		plotter.WithScatterGradient(colorgrad.Viridis()),
 		plotter.WithScatterMarker(plotter.Circle),
 		plotter.WithScatterColorbar(plotter.Vertical),
 	)
-	
-	plt.Title("Scatter Plot with Colorbar")
-	plt.XLabel("X")
-	plt.YLabel("Y")
+	plt.Title("scatter plot example")
+	plt.XLabel("xLabel")
+	plt.YLabel("yLabel")
+	plt.XLim(-3, 3)
+	plt.YLim(-3, 3)
 	plt.Grid()
+
 	plt.Save("scatter.png")
 }
 ```
@@ -132,22 +117,10 @@ func main() {
 package main
 
 import (
-	"math/rand/v2"
-
 	"github.com/adynascimento/plot/plotter"
 )
 
 func main() {
-	// histogram plot
-	x := make([]float64, 5000)
-	for i := range x {
-		if rand.Float64() < 0.65 {
-			x[i] = 10 + 0.7*rand.NormFloat64()
-		} else {
-			x[i] = 12.2 + 0.6*rand.NormFloat64()
-		}
-	}
-
 	plt := plotter.NewPlot()
 	plt.FigSize(10, 10)
 
@@ -157,8 +130,9 @@ func main() {
 		plotter.WithHistNormalCurve(plotter.Red),
 	)
 	plt.Title("histogram plot example")
-	plt.Legend("kde curve", "normal curve")
+	plt.Legend("kde curve", "normal curve").Location(plotter.UpperRight)
 	plt.XLabel("x")
+
 	plt.Save("histogram.png")
 }
 ```
@@ -176,25 +150,12 @@ func main() {
 package main
 
 import (
-	"math"
 	"github.com/adynascimento/plot/plotter"
 	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/mat"
 )
 
 func main() {
-	n := 300
-	x := mat.NewDense(1, n, plotter.Linspace(-3.0, 3.0, n))
-	y := mat.NewDense(1, n, plotter.Linspace(-3.0, 3.0, n))
-	Z := mat.NewDense(n, n, nil)
-	
-	for i := 0; i < n; i++ {
-		for j := 0; j < n; j++ {
-			v := math.Sin(x.At(0, j)) * math.Cos(y.At(0, i))
-			Z.Set(i, j, v)
-		}
-	}
-
 	plt := plotter.NewPlot()
 	plt.FigSize(10, 10)
 
@@ -203,10 +164,10 @@ func main() {
 		plotter.WithContourGradient(colorgrad.Turbo()),
 		plotter.WithContourLineStyle(plotter.Dashed),
 	)
-	
-	plt.Title("Contour Plot")
-	plt.XLabel("X")
-	plt.YLabel("Y")
+	plt.Title("contour plot example")
+	plt.XLabel("xLabel")
+	plt.YLabel("yLabel")
+
 	plt.Save("contour.png")
 }
 ```
@@ -224,25 +185,12 @@ func main() {
 package main
 
 import (
-	"math"
 	"github.com/adynascimento/plot/plotter"
 	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/mat"
 )
 
 func main() {
-	n := 300
-	x := mat.NewDense(1, n, plotter.Linspace(-3.0, 3.0, n))
-	y := mat.NewDense(1, n, plotter.Linspace(-3.0, 3.0, n))
-	Z := mat.NewDense(n, n, nil)
-	
-	for i := 0; i < n; i++ {
-		for j := 0; j < n; j++ {
-			v := math.Sin(x.At(0, j)) * math.Cos(y.At(0, i))
-			Z.Set(i, j, v)
-		}
-	}
-
 	plt := plotter.NewPlot()
 	plt.FigSize(10, 10)
 
@@ -250,12 +198,13 @@ func main() {
 		plotter.WithContourLevels(12),
 		plotter.WithContourGradient(colorgrad.Viridis()),
 		plotter.WithContourLines(),
+		plotter.WithContourLineStyle(plotter.Dashed),
 		plotter.WithContourColorbar(plotter.Vertical),
 	)
-	
-	plt.Title("Filled Contour Plot")
-	plt.XLabel("X")
-	plt.YLabel("Y")
+	plt.Title("contourf plot example")
+	plt.XLabel("xLabel")
+	plt.YLabel("yLabel")
+
 	plt.Save("contourf.png")
 }
 ```
@@ -273,40 +222,17 @@ func main() {
 package main
 
 import (
-	"encoding/csv"
-	"os"
-	"strconv"
 	"github.com/adynascimento/plot/plotter"
 	"gonum.org/v1/gonum/mat"
 )
 
 func main() {
-	// read image data from CSV (RGB channels)
-	file, _ := os.Open("pixels.csv")
-	lines, _ := csv.NewReader(file).ReadAll()
-
-	rChannel, gChannel, bChannel := []float64{}, []float64{}, []float64{}
-	for _, line := range lines {
-		r, _ := strconv.ParseFloat(line[0], 64)
-		rChannel = append(rChannel, r)
-
-		g, _ := strconv.ParseFloat(line[1], 64)
-		gChannel = append(gChannel, g)
-
-		b, _ := strconv.ParseFloat(line[2], 64)
-		bChannel = append(bChannel, b)
-	}
-
-	// organize into matrices (each channel is a 280x280 matrix)
-	channels := make([]*mat.Dense, 3)
-	channels[0] = mat.NewDense(280, 280, rChannel)
-	channels[1] = mat.NewDense(280, 280, gChannel)
-	channels[2] = mat.NewDense(280, 280, bChannel)
-
 	plt := plotter.NewPlot()
 	plt.FigSize(9, 9)
-	plt.ImShow(channels)
-	plt.Title("RGB Image")
+
+	plt.ImShow(x)
+	plt.Title("image plot example")
+
 	plt.Save("image.png")
 }
 ```
@@ -317,40 +243,77 @@ func main() {
 
 ---
 
-### 7. Subplots
+### 7. Animations
+
+```go
+// examples/animation/animation.go
+package main
+
+import (
+	"github.com/adynascimento/plot/plotter"
+	"gonum.org/v1/gonum/mat"
+)
+
+func main() {
+	plt := plotter.NewPlot()
+	plt.FigSize(11, 10)
+
+	update := func(frame int) {
+		plt.Clear()
+
+		// recompute the wave every frame
+		phase := float64(frame) * 0.10
+		y1 := plotter.Apply(func(_, _ int, v float64) float64 { return math.Sin(2*v - phase) }, x)
+		y2 := plotter.Apply(func(_, _ int, v float64) float64 { return math.Cos(2*v - phase) }, x)
+
+		plt.Plot(x.RawMatrix().Data, y1.RawMatrix().Data,
+			plotter.WithLineColor(plotter.Blue),
+			plotter.WithLineWidth(2),
+		)
+
+		plt.Plot(x.RawMatrix().Data, y2.RawMatrix().Data,
+			plotter.WithLineColor(plotter.Red),
+			plotter.WithLineWidth(2),
+		)
+
+		plt.Title("animation example")
+		plt.Legend("sin", "cos").Location(plotter.LowerLeft)
+		plt.XLabel("xLabel")
+		plt.YLabel("yLabel")
+		plt.XLim(0, 2*math.Pi)
+		plt.YLim(-1.2, 1.2)
+		plt.Grid()
+	}
+
+	nFrames := 240
+	plt.Animation(nFrames, update,
+		plotter.WithAnimationInterval(40*time.Millisecond),
+		plotter.WithAnimationLoop(true),
+	)
+
+	plt.Save("animation.gif")
+	plt.Show()
+}
+```
+
+**Output:**
+
+![Animation Example](examples/animation/animation.gif)
+
+---
+
+### 8. Subplots
 
 ```go
 // examples/subplot/subplot.go
 package main
 
 import (
-	"math"
 	"github.com/adynascimento/plot/plotter"
 	"gonum.org/v1/gonum/mat"
 )
 
 func main() {
-	// prepare data
-	x := mat.NewDense(1, 300, plotter.Linspace(0., 1., 300))
-
-	applySin1 := func(_, _ int, v float64) float64 { 
-		return math.Sin(25. * v) 
-	}
-	applySin2 := func(_, _ int, v float64) float64 { 
-		return 0.75 * math.Sin(25.*v) 
-	}
-	func1 := plotter.Apply(applySin1, x)
-	func2 := plotter.Apply(applySin2, x)
-
-	applyTan1 := func(_, _ int, v float64) float64 { 
-		return math.Tan(15. * v) 
-	}
-	applyTan2 := func(_, _ int, v float64) float64 { 
-		return 0.5 * math.Tan(15.*v) 
-	}
-	func3 := plotter.Apply(applyTan1, x)
-	func4 := plotter.Apply(applyTan2, x)
-
 	// create subplot with 1 row and 2 columns
 	plt := plotter.NewSubplot(1, 2)
 	plt.FigSize(23, 10)
@@ -476,7 +439,7 @@ plt.Hist(x, 16,
 	plotter.WithHistLineColor(plotter.Black),
 	plotter.WithHistLineWidth(1.5),
 	plotter.WithHistLineStyle(plotter.Solid),
-	plotter.WithHistDensityCurve(plotter.Red),
+	plotter.WithHistKDECurve(plotter.Red),
 )
 ```
 
@@ -514,7 +477,7 @@ Colorbar orientations:
 
 ### Displaying Figures
 
-Use `Save` to write the figure to a PNG file, or `Show` to open the rendered plot in a graphical window:
+Use `Save` to write the figure to a PNG file or an animation as a GIF file. Use `Show` to open the rendered plot in a graphical window:
 
 ```go
 plt.Save("plot.png")
@@ -539,33 +502,6 @@ plt.Scatter(x, y, nil,
 ```go
 gray := mat.NewDense(rows, cols, pixels)
 plt.ImShow([]*mat.Dense{gray})
-```
-
----
-
-## 📁 Project Structure
-
-```
-plot/
-├── go.mod                 # Go module definition
-├── go.sum                 # Dependency checksums
-├── plotter/               # Main API package
-│   ├── colorbar.go        # Colorbar implementation
-│   ├── contour.go         # Contour/ContourF implementation
-│   ├── histogram.go       # Histogram implementation
-│   ├── line.go            # Line plot options and configuration
-│   ├── models.go          # Data structures and utility functions
-│   ├── plotter.go         # Main plotting interface
-│   ├── scatter.go         # Scatter plot implementation
-│   └── subplotter.go      # Subplot implementation
-└── examples/              # Usage examples
-    ├── line/              # Line plot example
-    ├── scatter/           # Scatter plot example
-    ├── histogram/         # Histogram example
-    ├── contour/           # Contour plot example
-    ├── contourf/          # Filled contour plot example
-    ├── image/             # Image display example
-    └── subplot/           # Subplot example
 ```
 
 ---
@@ -603,9 +539,9 @@ go run contourf.go
 
 The project uses the following main libraries:
 
-- **Gonum plot**: Plotting engine
-- **Gonum**: Numerical operations
-- **Colorgrad**: Color gradient generation
+- **Gonum plot**: Plotting engine ([github.com/gonum/plot](https://github.com/gonum/plot))
+- **Gonum**: Numerical operations ([github.com/gonum/gonum](https://github.com/gonum/gonum))
+- **Colorgrad**: Color gradient generation ([github.com/mazznoer/colorgrad](https://github.com/mazznoer/colorgrad))
 
 ---
 

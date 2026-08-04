@@ -51,7 +51,7 @@ func (plt *subplotParameters) Subplot(row, col int) PlotterInterface {
 	plt.subplots[row][col] = p
 	return &plotParameters{
 		plot: p,
-		lineOptions: lineOptions{
+		line: lineOptions{
 			usedColors: make(map[color.Color]bool),
 		},
 	}
