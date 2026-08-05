@@ -15,7 +15,7 @@ type LegendLocation interface {
 	Location(loc location)
 }
 
-// legend mainly used in lines plots
+// legend mainly used in line plots
 func (plt *plotParameters) Legend(str ...string) LegendLocation {
 	// legend style
 	if len(plt.legends) > 0 {
@@ -30,7 +30,7 @@ func (plt *plotParameters) Legend(str ...string) LegendLocation {
 	return plt
 }
 
-// legend position
+// legend location
 func (plt *plotParameters) Location(loc location) {
 	switch loc {
 	case UpperRight:

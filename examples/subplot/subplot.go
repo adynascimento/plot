@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	// lines plot
+	// line plot
 	x := mat.NewDense(1, 300, plotter.Linspace(0., 1., 300))
 
 	applySin1 := func(_, _ int, v float64) float64 { return math.Sin(25. * v) }
