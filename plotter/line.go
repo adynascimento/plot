@@ -29,7 +29,7 @@ var (
 	Gray    colorType = color.RGBA{128, 128, 128, 255}
 )
 
-// default colors to lines plot
+// default colors to line plot
 var colors = []color.Color{
 	Black, Red, Blue,
 	Green, Cyan, Magenta,
@@ -67,7 +67,7 @@ type params struct {
 	markerSpacing int
 }
 
-// parameters to lines plots
+// parameters to line plots
 func (plt *plotParameters) Plot(x, y []float64, options ...func(*lineOptions)) {
 	var thumbs []plot.Thumbnailer
 	var plotters []plot.Plotter

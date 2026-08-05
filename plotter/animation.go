@@ -56,9 +56,9 @@ func (plt *plotParameters) drawAnimationFrame(gtx layout.Context, e app.FrameEve
 
 	// update and draw the next animation frame
 	if plt.animation.frame < plt.animation.nFrames {
-		plt.animation.frame++
 		plt.animation.update(plt.animation.frame)
 		plt.DrawPlot()
+		plt.animation.frame++
 	}
 
 	// schedule the next animation frame
@@ -72,7 +72,7 @@ func (plt *plotParameters) saveAnimation(file string) {
 
 	// render and collect all animation frames
 	for frame := 0; frame < plt.animation.nFrames; frame++ {
-		plt.animation.update(frame + 1)
+		plt.animation.update(frame)
 		plt.DrawPlot()
 
 		// convert image to paletted image for GIF encoding
