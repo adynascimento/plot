@@ -3,7 +3,6 @@ package plotter
 import (
 	"image/color"
 
-	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/plot/font"
 	"gonum.org/v1/plot/palette"
@@ -14,22 +13,15 @@ import (
 
 type contourOptions struct {
 	nLevels      int
-	gradient     colorgrad.Gradient
+	colormap     Colormap
 	lineSettings lineSettings
-	colorBar     colorBar
+	colorbar     colorbar
 }
 
 type lineSettings struct {
 	show  bool
 	width font.Length
 	style []vg.Length
-}
-
-type colorBar struct {
-	show     bool
-	gradient colorgrad.Gradient
-	min, max float64
-	position positionType
 }
 
 // parameters to contour plot
@@ -47,15 +39,20 @@ func (plt *plotParameters) Contour(x, y, z *mat.Dense, options ...func(*contourO
 	for _, option := range options {
 		option(&plt.contour)
 	}
-	plt.colorBar = plt.contour.colorBar
+	plt.colorbar = plt.contour.colorbar
 
 	// prepare data to plot
 	m := unitGrid{x: x, y: y, Data: z}
 
 	var p palette.Palette
-	if plt.contour.gradient != (colorgrad.Gradient{}) {
+	if plt.contour.colormap != nil {
 		// add colormap and make a contour plotter
-		p = &colorsGradient{colorList: plt.contour.gradient.Colors(uint(plt.contour.nLevels))}
+		p = &colormapPalette{
+			colorList: plt.contour.colormap.Colors(plt.contour.nLevels),
+			colormap:  plt.contour.colormap,
+			min:       mat.Min(z),
+			max:       mat.Max(z),
+		}
 	}
 
 	levels := Linspace(mat.Min(z), mat.Max(z), plt.contour.nLevels)
@@ -69,10 +66,10 @@ func (plt *plotParameters) Contour(x, y, z *mat.Dense, options ...func(*contourO
 	// add the plotters to the plot
 	plt.plot.Add(c)
 
-	if plt.colorBar.show {
+	if plt.colorbar.show {
 		// get min and max values
-		plt.colorBar.min = c.Min
-		plt.colorBar.max = c.Max
+		plt.colorbar.min = c.Min
+		plt.colorbar.max = c.Max
 	}
 }
 
@@ -81,13 +78,13 @@ func (plt *plotParameters) ContourF(x, y, z *mat.Dense, options ...func(*contour
 	// default options
 	plt.contour = contourOptions{
 		nLevels:  10,
-		gradient: colorgrad.Viridis(),
+		colormap: Viridis,
 		lineSettings: lineSettings{
 			style: Solid,
 			width: vg.Points(1),
 		},
-		colorBar: colorBar{
-			gradient: colorgrad.Viridis(),
+		colorbar: colorbar{
+			colormap: Viridis,
 		},
 	}
 
@@ -95,23 +92,28 @@ func (plt *plotParameters) ContourF(x, y, z *mat.Dense, options ...func(*contour
 	for _, option := range options {
 		option(&plt.contour)
 	}
-	plt.colorBar = plt.contour.colorBar
+	plt.colorbar = plt.contour.colorbar
 
 	// prepare data to plot
 	m := unitGrid{x: x, y: y, Data: z}
 
 	// add colormap and make a heatmap plotter
-	p := colorsGradient{colorList: plt.contour.gradient.Colors(uint(plt.contour.nLevels))}
+	p := colormapPalette{
+		colorList: plt.contour.colormap.Colors(plt.contour.nLevels),
+		colormap:  plt.contour.colormap,
+		min:       mat.Min(z),
+		max:       mat.Max(z),
+	}
 	raster := plotter.NewHeatMap(m, &p)
 	raster.Rasterized = true
 
 	// add the plotters to the plot
 	plt.plot.Add(raster)
 
-	if plt.colorBar.show {
+	if plt.colorbar.show {
 		// get min and max values
-		plt.colorBar.min = raster.Min
-		plt.colorBar.max = raster.Max
+		plt.colorbar.min = raster.Min
+		plt.colorbar.max = raster.Max
 	}
 
 	if plt.contour.lineSettings.show {
@@ -135,10 +137,10 @@ func WithContourLevels(levels int) func(*contourOptions) {
 	}
 }
 
-func WithContourGradient(gradient colorgrad.Gradient) func(*contourOptions) {
+func WithContourColormap(cmap Colormap) func(*contourOptions) {
 	return func(co *contourOptions) {
-		co.gradient = gradient
-		co.colorBar.gradient = gradient
+		co.colormap = cmap
+		co.colorbar.colormap = cmap
 	}
 }
 
@@ -162,11 +164,11 @@ func WithContourLineStyle(style lineStyleType) func(*contourOptions) {
 
 func WithContourColorbar(position positionType) func(*contourOptions) {
 	return func(co *contourOptions) {
-		if co.gradient == (colorgrad.Gradient{}) {
-			co.colorBar.show = false
+		if co.colormap == nil {
+			co.colorbar.show = false
 		} else {
-			co.colorBar.show = true
-			co.colorBar.position = position
+			co.colorbar.show = true
+			co.colorbar.position = position
 		}
 	}
 }

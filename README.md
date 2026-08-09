@@ -21,7 +21,7 @@ Common plot configuration includes:
 - **Titles** for the plots
 - **Axis limits** (XLim and YLim)
 - **Grid** for better readability
-- **Color gradients** using the colorgrad library for scatter, contour, and filled contour plots
+- **Built-in Colormaps** with automatic normalization for scatter, contour, and filled contour plots
 - **Customizable figure size**
 - **Save** static plots as PNG files or animations as GIF files, or **Show** them in a graphical window
 
@@ -35,7 +35,6 @@ package main
 
 import (
 	"github.com/adynascimento/plot/plotter"
-	"gonum.org/v1/gonum/mat"
 )
 
 func main() {
@@ -81,7 +80,6 @@ package main
 
 import (
 	"github.com/adynascimento/plot/plotter"
-	"github.com/mazznoer/colorgrad"
 )
 
 func main() {
@@ -89,7 +87,7 @@ func main() {
 	plt.FigSize(10, 9)
 
 	plt.Scatter(x, y, Z,
-		plotter.WithScatterGradient(colorgrad.Viridis()),
+		plotter.WithScatterColormap(plotter.Viridis),
 		plotter.WithScatterMarker(plotter.Circle),
 		plotter.WithScatterColorbar(plotter.Vertical),
 	)
@@ -151,8 +149,6 @@ package main
 
 import (
 	"github.com/adynascimento/plot/plotter"
-	"github.com/mazznoer/colorgrad"
-	"gonum.org/v1/gonum/mat"
 )
 
 func main() {
@@ -161,7 +157,7 @@ func main() {
 
 	plt.Contour(x, y, Z,
 		plotter.WithContourLevels(12),
-		plotter.WithContourGradient(colorgrad.Turbo()),
+		plotter.WithContourColormap(plotter.Turbo),
 		plotter.WithContourLineStyle(plotter.Dashed),
 	)
 	plt.Title("contour plot example")
@@ -186,8 +182,6 @@ package main
 
 import (
 	"github.com/adynascimento/plot/plotter"
-	"github.com/mazznoer/colorgrad"
-	"gonum.org/v1/gonum/mat"
 )
 
 func main() {
@@ -196,7 +190,7 @@ func main() {
 
 	plt.ContourF(x, y, Z,
 		plotter.WithContourLevels(12),
-		plotter.WithContourGradient(colorgrad.Viridis()),
+		plotter.WithContourColormap(plotter.Viridis),
 		plotter.WithContourLines(),
 		plotter.WithContourLineStyle(plotter.Dashed),
 		plotter.WithContourColorbar(plotter.Vertical),
@@ -223,7 +217,6 @@ package main
 
 import (
 	"github.com/adynascimento/plot/plotter"
-	"gonum.org/v1/gonum/mat"
 )
 
 func main() {
@@ -251,7 +244,6 @@ package main
 
 import (
 	"github.com/adynascimento/plot/plotter"
-	"gonum.org/v1/gonum/mat"
 )
 
 func main() {
@@ -310,7 +302,6 @@ package main
 
 import (
 	"github.com/adynascimento/plot/plotter"
-	"gonum.org/v1/gonum/mat"
 )
 
 func main() {
@@ -384,7 +375,7 @@ Available line styles:
 
 ```go
 plt.Plot(x, y, plotter.WithLineMarker(plotter.Circle))
-plt.Plot(x, y, plotter.WithLineMarkerSpacing(8)) // spacing between markers
+plt.Plot(x, y, plotter.WithLineMarkerSpacing(8))
 plt.Plot(x, y, plotter.WithLineMarkerSize(4))
 ```
 
@@ -425,7 +416,7 @@ Contour and filled contour plots:
 ```go
 plt.Contour(x, y, z,
 	plotter.WithContourLevels(12),
-	plotter.WithContourGradient(colorgrad.Turbo()),
+	plotter.WithContourColormap(plotter.Turbo),
 	plotter.WithContourLineWidth(2),
 	plotter.WithContourLineStyle(plotter.Dashed),
 )
@@ -443,20 +434,20 @@ plt.Hist(x, 16,
 )
 ```
 
-### Color Gradients
+### Built-in Colormaps
 
-The library supports gradients from the `colorgrad` package:
-- `colorgrad.Viridis()` - Viridis
-- `colorgrad.Plasma()` - Plasma
-- `colorgrad.Inferno()` - Inferno
-- `colorgrad.Magma()` - Magma
-- `colorgrad.Cividis()` - Cividis
-- `colorgrad.Turbo()` - Turbo
-- And many others...
+The library supports a wide range of built-in colormaps with automatic data normalization:
+- `plotter.Viridis` - Viridis (Sequential multi-hue)
+- `plotter.Turbo` - Turbo (Cyclic/Sequential)
+- `plotter.Plasma` - Plasma
+- `plotter.Magma` - Magma
+- `plotter.Inferno` - Inferno
+- `plotter.Cividis` - Cividis
+- And many others (including Blues, Greens, Spectral, and Rainbow)...
 
 ```go
-plt.Scatter(x, y, z, plotter.WithScatterGradient(colorgrad.Viridis()))
-plt.Contour(x, y, z, plotter.WithContourGradient(colorgrad.Turbo()))
+plt.Scatter(x, y, z, plotter.WithScatterColormap(plotter.Viridis))
+plt.Contour(x, y, z, plotter.WithContourColormap(plotter.Turbo))
 ```
 
 ### Colorbars
@@ -541,7 +532,7 @@ The project uses the following main libraries:
 
 - **Gonum plot**: Plotting engine ([github.com/gonum/plot](https://github.com/gonum/plot))
 - **Gonum**: Numerical operations ([github.com/gonum/gonum](https://github.com/gonum/gonum))
-- **Colorgrad**: Color gradient generation ([github.com/mazznoer/colorgrad](https://github.com/mazznoer/colorgrad))
+- **Colorgrad**: Internal color gradient generation ([github.com/mazznoer/colorgrad](https://github.com/mazznoer/colorgrad))
 
 ---
 

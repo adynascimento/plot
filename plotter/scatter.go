@@ -4,7 +4,6 @@ import (
 	"image/color"
 	"log"
 
-	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/plot/font"
 	"gonum.org/v1/plot/plotter"
@@ -14,10 +13,10 @@ import (
 
 type scatterOptions struct {
 	color      color.Color
-	gradient   colorgrad.Gradient
+	colormap   Colormap
 	marker     draw.GlyphDrawer
 	markerSize font.Length
-	colorBar   colorBar
+	colorbar   colorbar
 }
 
 // parameters to scatter plot
@@ -33,7 +32,7 @@ func (plt *plotParameters) Scatter(x, y, z []float64, options ...func(*scatterOp
 	for _, option := range options {
 		option(&plt.scatter)
 	}
-	plt.colorBar = plt.scatter.colorBar
+	plt.colorbar = plt.scatter.colorbar
 
 	// prepare data to plot
 	var xys plotter.XYer
@@ -65,22 +64,36 @@ func (plt *plotParameters) Scatter(x, y, z []float64, options ...func(*scatterOp
 		Shape:  plt.scatter.marker,
 	}
 
-	if plt.scatter.gradient != (colorgrad.Gradient{}) {
+	if plt.scatter.colormap != nil && len(z) > 0 {
+		min := floats.Min(z)
+		max := floats.Max(z)
+		colors := plt.scatter.colormap.Colors(len(z))
+
 		// specify style and color for individual points.
+		// normalize to determine its percentage/position in the color palette
 		sc.GlyphStyleFunc = func(i int) draw.GlyphStyle {
-			colors := plt.scatter.gradient.Colors(uint(len(z)))
-			return draw.GlyphStyle{Color: colors[i], Radius: plt.scatter.markerSize,
-				Shape: plt.scatter.marker}
+			var percent float64
+			if max == min {
+				percent = 0.5
+			} else {
+				percent = (z[i] - min) / (max - min)
+			}
+			colorIdx := int(percent * float64(len(z)-1))
+			return draw.GlyphStyle{
+				Color:  colors[colorIdx],
+				Radius: plt.scatter.markerSize,
+				Shape:  plt.scatter.marker,
+			}
 		}
 	}
 
 	// add the plotters to the plot
 	plt.plot.Add(sc)
 
-	if plt.colorBar.show {
+	if plt.colorbar.show && len(z) > 0 {
 		// get min and max values
-		plt.colorBar.min = floats.Min(z)
-		plt.colorBar.max = floats.Max(z)
+		plt.colorbar.min = floats.Min(z)
+		plt.colorbar.max = floats.Max(z)
 	}
 }
 
@@ -90,10 +103,10 @@ func WithScatterMarkerColor(color colorType) func(*scatterOptions) {
 	}
 }
 
-func WithScatterGradient(gradient colorgrad.Gradient) func(*scatterOptions) {
+func WithScatterColorMap(cmap Colormap) func(*scatterOptions) {
 	return func(so *scatterOptions) {
-		so.gradient = gradient
-		so.colorBar.gradient = gradient
+		so.colormap = cmap
+		so.colorbar.colormap = cmap
 	}
 }
 
@@ -111,11 +124,11 @@ func WithScatterMarkerSize(size float64) func(*scatterOptions) {
 
 func WithScatterColorbar(position positionType) func(*scatterOptions) {
 	return func(so *scatterOptions) {
-		if so.gradient == (colorgrad.Gradient{}) {
-			so.colorBar.show = false
+		if so.colormap == nil {
+			so.colorbar.show = false
 		} else {
-			so.colorBar.show = true
-			so.colorBar.position = position
+			so.colorbar.show = true
+			so.colorbar.position = position
 		}
 	}
 }

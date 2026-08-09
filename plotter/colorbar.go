@@ -1,7 +1,6 @@
 package plotter
 
 import (
-	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/font"
 	"gonum.org/v1/plot/plotter"
@@ -17,20 +16,25 @@ var (
 	Horizontal positionType = "horizontal"
 )
 
-func (plt *plotParameters) drawVerticalColorBar(xwidth, ywidth font.Length) *vgimg.Canvas {
-	grad, _ := colorgrad.NewGradient().
-		Colors(plt.colorBar.gradient.Colors(1000)...).
-		Domain(plt.colorBar.min, plt.colorBar.max).Build()
+type colorbar struct {
+	show     bool
+	colormap Colormap
+	min, max float64
+	position positionType
+}
 
+func (plt *plotParameters) drawVerticalColorbar(xwidth, ywidth font.Length) *vgimg.Canvas {
 	// create a new plot for vertical colorbar
 	c := plot.New()
 	c.HideX()
 	c.Y.Padding = 0
-	l := &plotter.ColorBar{ColorMap: &colorsGradient{
-		gradient: grad,
-	}}
-	l.ColorMap.SetMin(plt.colorBar.min)
-	l.ColorMap.SetMax(plt.colorBar.max)
+	l := &plotter.ColorBar{
+		ColorMap: &colormapPalette{
+			colormap: plt.colorbar.colormap,
+		},
+	}
+	l.ColorMap.SetMin(plt.colorbar.min)
+	l.ColorMap.SetMax(plt.colorbar.max)
 	l.Vertical = true
 	c.Add(l)
 
@@ -61,20 +65,18 @@ func (plt *plotParameters) drawVerticalColorBar(xwidth, ywidth font.Length) *vgi
 	return img
 }
 
-func (plt *plotParameters) drawHorizontalColorBar(xwidth, ywidth font.Length) *vgimg.Canvas {
-	grad, _ := colorgrad.NewGradient().
-		Colors(plt.colorBar.gradient.Colors(1000)...).
-		Domain(plt.colorBar.min, plt.colorBar.max).Build()
-
+func (plt *plotParameters) drawHorizontalColorbar(xwidth, ywidth font.Length) *vgimg.Canvas {
 	// create a new plot for horizontal colorbar
 	c := plot.New()
 	c.HideY()
 	c.X.Padding = 0
-	l := &plotter.ColorBar{ColorMap: &colorsGradient{
-		gradient: grad,
-	}}
-	l.ColorMap.SetMin(plt.colorBar.min)
-	l.ColorMap.SetMax(plt.colorBar.max)
+	l := &plotter.ColorBar{
+		ColorMap: &colormapPalette{
+			colormap: plt.colorbar.colormap,
+		},
+	}
+	l.ColorMap.SetMin(plt.colorbar.min)
+	l.ColorMap.SetMax(plt.colorbar.max)
 	c.Add(l)
 
 	// spacing between plot and colorbar

@@ -5,7 +5,6 @@ import (
 	"math/rand"
 
 	"github.com/adynascimento/plot/plotter"
-	"github.com/mazznoer/colorgrad"
 )
 
 func main() {
@@ -24,10 +23,10 @@ func main() {
 	}
 
 	plt := plotter.NewPlot()
-	plt.FigSize(10, 9)
+	plt.FigSize(10, 10)
 
 	plt.Scatter(x, y, Z,
-		plotter.WithScatterGradient(colorgrad.Viridis()),
+		plotter.WithScatterColorMap(plotter.Viridis),
 		plotter.WithScatterMarker(plotter.Circle),
 		plotter.WithScatterColorbar(plotter.Vertical),
 	)

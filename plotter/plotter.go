@@ -119,12 +119,12 @@ func (plt *plotParameters) DrawPlot() {
 	})
 
 	// add colorbar to plot
-	if plt.colorBar.show {
-		switch plt.colorBar.position {
+	if plt.colorbar.show {
+		switch plt.colorbar.position {
 		case Vertical:
-			img = plt.drawVerticalColorBar(xwidth, ywidth)
+			img = plt.drawVerticalColorbar(xwidth, ywidth)
 		case Horizontal:
-			img = plt.drawHorizontalColorBar(xwidth, ywidth)
+			img = plt.drawHorizontalColorbar(xwidth, ywidth)
 		}
 	}
 
