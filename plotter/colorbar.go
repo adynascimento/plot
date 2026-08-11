@@ -25,18 +25,18 @@ type colorbar struct {
 
 func (plt *plotParameters) drawVerticalColorbar(xwidth, ywidth font.Length) *vgimg.Canvas {
 	// create a new plot for vertical colorbar
-	c := plot.New()
-	c.HideX()
-	c.Y.Padding = 0
-	l := &plotter.ColorBar{
+	p := plot.New()
+	p.HideX()
+	p.Y.Padding = 0
+	c := &plotter.ColorBar{
 		ColorMap: &colormapPalette{
 			colormap: plt.colorbar.colormap,
 		},
 	}
-	l.ColorMap.SetMin(plt.colorbar.min)
-	l.ColorMap.SetMax(plt.colorbar.max)
-	l.Vertical = true
-	c.Add(l)
+	c.ColorMap.SetMin(plt.colorbar.min)
+	c.ColorMap.SetMax(plt.colorbar.max)
+	c.Vertical = true
+	p.Add(c)
 
 	// spacing between plot and colorbar
 	spacing := font.Length(1.5) * vg.Centimeter
@@ -54,7 +54,7 @@ func (plt *plotParameters) drawVerticalColorbar(xwidth, ywidth font.Length) *vgi
 	})
 
 	// draw the colorbar in the second column
-	c.Draw(draw.Canvas{
+	p.Draw(draw.Canvas{
 		Canvas: dCanvas,
 		Rectangle: vg.Rectangle{
 			Min: vg.Point{X: (xwidth + 0.3*spacing), Y: vg.Centimeter},
@@ -67,17 +67,17 @@ func (plt *plotParameters) drawVerticalColorbar(xwidth, ywidth font.Length) *vgi
 
 func (plt *plotParameters) drawHorizontalColorbar(xwidth, ywidth font.Length) *vgimg.Canvas {
 	// create a new plot for horizontal colorbar
-	c := plot.New()
-	c.HideY()
-	c.X.Padding = 0
-	l := &plotter.ColorBar{
+	p := plot.New()
+	p.HideY()
+	p.X.Padding = 0
+	c := &plotter.ColorBar{
 		ColorMap: &colormapPalette{
 			colormap: plt.colorbar.colormap,
 		},
 	}
-	l.ColorMap.SetMin(plt.colorbar.min)
-	l.ColorMap.SetMax(plt.colorbar.max)
-	c.Add(l)
+	c.ColorMap.SetMin(plt.colorbar.min)
+	c.ColorMap.SetMax(plt.colorbar.max)
+	p.Add(c)
 
 	// spacing between plot and colorbar
 	spacing := font.Length(1.5) * vg.Centimeter
@@ -95,7 +95,7 @@ func (plt *plotParameters) drawHorizontalColorbar(xwidth, ywidth font.Length) *v
 	})
 
 	// Draw the color bar in the second column
-	c.Draw(draw.Canvas{
+	p.Draw(draw.Canvas{
 		Canvas: dCanvas,
 		Rectangle: vg.Rectangle{
 			Min: vg.Point{X: vg.Centimeter, Y: 0},
