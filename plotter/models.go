@@ -4,7 +4,6 @@ import (
 	"image/color"
 
 	"gioui.org/app"
-	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/palette"
@@ -22,7 +21,7 @@ type plotParameters struct {
 	figure    vgimg.PngCanvas      // figure to plot and save
 	window    *app.Window          // window to show the figure
 	animation *animationOptions    // animation options
-	colorBar  colorBar             // show colorbar with gradient
+	colorbar  colorbar             // show colorbar with gradient
 }
 
 type subplotParameters struct {
@@ -49,28 +48,39 @@ func (g unitGrid) Y(r int) float64    { return g.y.At(0, r) }
 
 // struct that defines methods to match the Palette interface defined in gonum plot library
 // used in heatmap and contour plots
-type colorsGradient struct {
+type colormapPalette struct {
 	colorList []color.Color
-	gradient  colorgrad.Gradient
+	colormap  Colormap
 	min, max  float64
 }
 
 // methods to match the Palette interface defined in gonum plot library
-func (g *colorsGradient) Colors() []color.Color { return g.colorList }
-func (g *colorsGradient) Alpha() float64        { return 1.0 }
-func (g *colorsGradient) At(v float64) (color.Color, error) {
-	return g.gradient.At(v), nil
+func (p *colormapPalette) Colors() []color.Color {
+	if len(p.colorList) == 0 {
+		p.colorList = p.colormap.Colors(256)
+	}
+	return p.colorList
 }
-func (g *colorsGradient) Max() float64 { return g.max }
-func (g *colorsGradient) Min() float64 { return g.min }
-func (g *colorsGradient) Palette(n int) palette.Palette {
-	return &colorsGradient{
-		colorList: g.gradient.Colors(uint(n)),
+func (p *colormapPalette) Alpha() float64 { return 1.0 }
+func (p *colormapPalette) At(v float64) (color.Color, error) {
+	if p.max == p.min {
+		return p.colormap.At(0.5), nil
+	}
+	return p.colormap.At((v - p.min) / (p.max - p.min)), nil
+}
+func (p *colormapPalette) Max() float64 { return p.max }
+func (p *colormapPalette) Min() float64 { return p.min }
+func (p *colormapPalette) Palette(n int) palette.Palette {
+	return &colormapPalette{
+		colorList: p.colormap.Colors(n),
+		colormap:  p.colormap,
+		min:       p.min,
+		max:       p.max,
 	}
 }
-func (g *colorsGradient) SetMax(v float64)   { g.max = v }
-func (g *colorsGradient) SetMin(v float64)   { g.min = v }
-func (g *colorsGradient) SetAlpha(a float64) {}
+func (p *colormapPalette) SetMax(v float64)   { p.max = v }
+func (p *colormapPalette) SetMin(v float64)   { p.min = v }
+func (p *colormapPalette) SetAlpha(a float64) {}
 
 // generate linearly spaced slice of float64
 func Linspace(start, stop float64, num int) []float64 {

@@ -22,8 +22,8 @@ require (
 	github.com/mazznoer/csscolorparser v0.1.0 // indirect
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
 	golang.org/x/exp/shiny v0.0.0-20260603202125-055de637280b // indirect
-	golang.org/x/image v0.40.0 // indirect
-	golang.org/x/net v0.48.0 // indirect
-	golang.org/x/sys v0.44.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/image v0.43.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
+	golang.org/x/text v0.39.0 // indirect
 )

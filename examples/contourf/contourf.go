@@ -4,7 +4,6 @@ import (
 	"math"
 
 	"github.com/adynascimento/plot/plotter"
-	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -26,7 +25,7 @@ func main() {
 
 	plt.ContourF(x, y, Z,
 		plotter.WithContourLevels(12),
-		plotter.WithContourGradient(colorgrad.Viridis()),
+		plotter.WithContourColormap(plotter.Viridis),
 		plotter.WithContourLines(),
 		plotter.WithContourLineStyle(plotter.Dashed),
 		plotter.WithContourColorbar(plotter.Vertical),

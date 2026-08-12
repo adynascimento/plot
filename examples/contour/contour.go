@@ -4,7 +4,6 @@ import (
 	"math"
 
 	"github.com/adynascimento/plot/plotter"
-	"github.com/mazznoer/colorgrad"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -26,7 +25,7 @@ func main() {
 
 	plt.Contour(x, y, Z,
 		plotter.WithContourLevels(12),
-		plotter.WithContourGradient(colorgrad.Turbo()),
+		plotter.WithContourColormap(plotter.Turbo),
 		plotter.WithContourLineStyle(plotter.Dashed),
 	)
 	plt.Title("contour plot example")
