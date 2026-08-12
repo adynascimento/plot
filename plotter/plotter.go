@@ -107,7 +107,7 @@ func (plt *plotParameters) DrawPlot() {
 	ywidth := font.Length(plt.figSize.ywidth) * vg.Centimeter
 
 	// new image canvas
-	img := vgimg.New(xwidth, ywidth)
+	img := vgimg.New(1.02*xwidth, ywidth)
 
 	// draw the plot
 	plt.plot.Draw(draw.Canvas{
