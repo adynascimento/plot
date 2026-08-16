@@ -486,7 +486,7 @@ plt.Scatter(x, y, nil,
 )
 ```
 
-### Grayscale Images
+### Images
 
 `ImShow` accepts one matrix for grayscale images or three matrices for RGB images:
 
