@@ -103,8 +103,8 @@ func (plt *plotParameters) ImShow(x []*mat.Dense) {
 
 // draw plot to a figure
 func (plt *plotParameters) DrawPlot() {
-	xwidth := font.Length(plt.figSize.xwidth) * vg.Centimeter
-	ywidth := font.Length(plt.figSize.ywidth) * vg.Centimeter
+	xwidth := plt.figSize.xwidth
+	ywidth := plt.figSize.ywidth
 
 	// new image canvas
 	img := vgimg.New(1.02*xwidth, ywidth)
@@ -213,8 +213,8 @@ func (plt *plotParameters) Clear() {
 
 // size of the saved figure
 func (plt *plotParameters) FigSize(xwidth, ywidth int) {
-	plt.figSize.xwidth = xwidth
-	plt.figSize.ywidth = ywidth
+	plt.figSize.xwidth = font.Length(xwidth) * vg.Centimeter
+	plt.figSize.ywidth = font.Length(ywidth) * vg.Centimeter
 }
 
 // title for all plots

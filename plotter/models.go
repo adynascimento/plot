@@ -6,6 +6,7 @@ import (
 	"gioui.org/app"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/font"
 	"gonum.org/v1/plot/palette"
 	"gonum.org/v1/plot/vg/vgimg"
 )
@@ -27,12 +28,20 @@ type plotParameters struct {
 type subplotParameters struct {
 	rows     int
 	cols     int
-	subplots [][]*plot.Plot  // plots for subplot
-	figSize  figSize         // xwidth and ywidth of the saved figure
-	figure   vgimg.PngCanvas // figure to plot and savev
+	subplots [][]*plotParameters //  plots for subplot
+	figSize  figSize             // xwidth and ywidth of the saved figure
+	figure   vgimg.PngCanvas     // figure to plot and save
 }
 
-type figSize struct{ xwidth, ywidth int }
+type figSize struct {
+	xwidth, ywidth font.Length
+}
+
+// set figure size using Gonum units
+func (plt *plotParameters) setFigSize(xwidth, ywidth font.Length) {
+	plt.figSize.xwidth = xwidth
+	plt.figSize.ywidth = ywidth
+}
 
 // struct that defines methods to match the GridXYZ interface defined in gonum plot library
 // used in heatmap and contour plots

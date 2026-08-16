@@ -24,7 +24,7 @@ func main() {
 	plt := plotter.NewSubplot(1, 2)
 	plt.FigSize(23, 10)
 
-	subplt := plt.Subplot(0, 0)
+	subplt := plt.Subplot(1, 1)
 	subplt.Plot(x.RawMatrix().Data, func1.RawMatrix().Data)
 	subplt.Plot(x.RawMatrix().Data, func2.RawMatrix().Data)
 	subplt.Title("sin function")
@@ -33,7 +33,7 @@ func main() {
 	subplt.Legend("sin1", "sin2")
 	subplt.Grid()
 
-	subplt = plt.Subplot(0, 1)
+	subplt = plt.Subplot(1, 2)
 	subplt.Plot(x.RawMatrix().Data, func3.RawMatrix().Data)
 	subplt.Plot(x.RawMatrix().Data, func4.RawMatrix().Data)
 	subplt.Title("tan function")
